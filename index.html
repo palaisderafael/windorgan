@@ -11,10 +11,10 @@
       font-family: 'Times New Roman', Times, serif;
       color: #000000;
       min-height: 100vh;
-      background-size: cover;
-      background-position: center;
+      background-size: contain;
+      background-position: center top;
       background-repeat: no-repeat;
-      background-attachment: fixed;
+      background-color: #ffffff;
     }
 
     .page {
@@ -22,17 +22,22 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: flex-start;
-      padding: 80px 60px;
-      max-width: 600px;
+      align-items: center;
+      padding: 60px 40px;
+      text-align: left;
+    }
+
+    .inner {
+      width: 100%;
+      max-width: 420px;
     }
 
     .title {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: normal;
       line-height: 1.6;
       margin-bottom: 32px;
-      text-shadow: 0 1px 3px rgba(255,255,255,0.8), 0 0 8px rgba(255,255,255,0.6);
+      text-shadow: 0 1px 4px rgba(255,255,255,0.9);
     }
 
     .player {
@@ -41,7 +46,7 @@
       display: flex;
       align-items: center;
       gap: 16px;
-      background: rgba(255, 255, 255, 0.55);
+      background: rgba(255, 255, 255, 0.60);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
     }
@@ -73,34 +78,36 @@
     .pause { display: none; gap: 3px; }
     .pause-bar { width: 4px; height: 14px; background: #ffffff; }
 
-    .info { display: flex; flex-direction: column; gap: 3px; }
+    .info { display: flex; flex-direction: column; gap: 4px; }
 
     .location, .time, .status {
-      font-size: 12px;
+      font-size: 13px;
       color: #000000;
-      text-shadow: 0 1px 2px rgba(255,255,255,0.6);
     }
 
     @media (max-width: 480px) {
       .page { padding: 40px 24px; }
+      .title { font-size: 15px; }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="title">Wind Organ<br>My Ear in G</div>
-    <div class="player">
-      <button class="play-btn" onclick="toggle()" aria-label="Play stream">
-        <div class="triangle" id="triangle"></div>
-        <div class="pause" id="pause">
-          <div class="pause-bar"></div>
-          <div class="pause-bar"></div>
+    <div class="inner">
+      <div class="title">Wind Organ<br>My Ear in G</div>
+      <div class="player">
+        <button class="play-btn" onclick="toggle()" aria-label="Play stream">
+          <div class="triangle" id="triangle"></div>
+          <div class="pause" id="pause">
+            <div class="pause-bar"></div>
+            <div class="pause-bar"></div>
+          </div>
+        </button>
+        <div class="info">
+          <span class="location">Oakland, California</span>
+          <span class="time" id="clock"></span>
+          <span class="status" id="status">press play to listen</span>
         </div>
-      </button>
-      <div class="info">
-        <span class="location">Oakland, California</span>
-        <span class="time" id="clock"></span>
-        <span class="status" id="status">press play to listen</span>
       </div>
     </div>
   </div>
@@ -108,7 +115,6 @@
   <audio id="audio" src="https://radio.shoutcheap.com/proxy/rafael/stream" preload="none"></audio>
 
   <script>
-    // Alternate background image randomly each page load
     const images = ['flying.jpg', 'nyc.jpg'];
     const chosen = images[Math.floor(Math.random() * images.length)];
     document.body.style.backgroundImage = 'url(' + chosen + ')';

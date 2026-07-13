@@ -5,30 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wind Organ — My Ear in G</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #ffffff;
       font-family: 'Times New Roman', Times, serif;
       color: #000000;
+      min-height: 100vh;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
 
     .page {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 80px 40px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 80px 60px;
+      max-width: 600px;
     }
 
     .title {
       font-size: 14px;
       font-weight: normal;
       line-height: 1.6;
-      margin-bottom: 48px;
-      letter-spacing: 0.01em;
+      margin-bottom: 32px;
+      text-shadow: 0 1px 3px rgba(255,255,255,0.8), 0 0 8px rgba(255,255,255,0.6);
     }
 
     .player {
@@ -37,6 +41,9 @@
       display: flex;
       align-items: center;
       gap: 16px;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
 
     .play-btn {
@@ -52,9 +59,7 @@
       justify-content: center;
     }
 
-    .play-btn:hover {
-      background-color: #1f551f;
-    }
+    .play-btn:hover { background-color: #3da012; }
 
     .triangle {
       width: 0;
@@ -65,51 +70,66 @@
       margin-left: 3px;
     }
 
-    .pause {
-      display: none;
-      gap: 3px;
-    }
+    .pause { display: none; gap: 3px; }
+    .pause-bar { width: 4px; height: 14px; background: #ffffff; }
 
-    .pause-bar {
-      width: 4px;
-      height: 14px;
-      background: #ffffff;
-    }
+    .info { display: flex; flex-direction: column; gap: 3px; }
 
-    .status {
+    .location, .time, .status {
       font-size: 12px;
-      font-family: 'Times New Roman', Times, serif;
       color: #000000;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+    }
+
+    @media (max-width: 480px) {
+      .page { padding: 40px 24px; }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="title">
-      Wind Organ<br>
-      My Ear in G
-    </div>
-
+    <div class="title">Wind Organ<br>My Ear in G</div>
     <div class="player">
-      <button class="play-btn" id="playBtn" onclick="toggle()" aria-label="Play stream">
+      <button class="play-btn" onclick="toggle()" aria-label="Play stream">
         <div class="triangle" id="triangle"></div>
         <div class="pause" id="pause">
           <div class="pause-bar"></div>
           <div class="pause-bar"></div>
         </div>
       </button>
-      <span class="status" id="status">press play to listen</span>
+      <div class="info">
+        <span class="location">Oakland, California</span>
+        <span class="time" id="clock"></span>
+        <span class="status" id="status">press play to listen</span>
+      </div>
     </div>
   </div>
 
   <audio id="audio" src="https://radio.shoutcheap.com/proxy/rafael/stream" preload="none"></audio>
 
   <script>
+    // Alternate background image randomly each page load
+    const images = ['small1.jpeg', 'small2.jpeg'];
+    const chosen = images[Math.floor(Math.random() * images.length)];
+    document.body.style.backgroundImage = 'url(' + chosen + ')';
+
     let playing = false;
     const audio = document.getElementById('audio');
     const triangle = document.getElementById('triangle');
     const pause = document.getElementById('pause');
     const status = document.getElementById('status');
+    const clock = document.getElementById('clock');
+
+    function updateClock() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-US', {
+        timeZone: 'America/Los_Angeles',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+      clock.textContent = time + ' PST';
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
     function toggle() {
       if (!playing) {

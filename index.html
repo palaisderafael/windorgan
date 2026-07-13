@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wind Organ — My Ear in G</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #ffffff;
+      font-family: 'Times New Roman', Times, serif;
+      color: #000000;
+    }
+
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 80px 40px;
+    }
+
+    .title {
+      font-size: 14px;
+      font-weight: normal;
+      line-height: 1.6;
+      margin-bottom: 48px;
+      letter-spacing: 0.01em;
+    }
+
+    .player {
+      border: 1px solid #000000;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .play-btn {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      background-color: #2a6e2a;
+      border: none;
+      border-radius: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-btn:hover {
+      background-color: #1f551f;
+    }
+
+    .triangle {
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 7px 0 7px 13px;
+      border-color: transparent transparent transparent #ffffff;
+      margin-left: 3px;
+    }
+
+    .pause {
+      display: none;
+      gap: 3px;
+    }
+
+    .pause-bar {
+      width: 4px;
+      height: 14px;
+      background: #ffffff;
+    }
+
+    .status {
+      font-size: 12px;
+      font-family: 'Times New Roman', Times, serif;
+      color: #000000;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="title">
+      Wind Organ<br>
+      My Ear in G
+    </div>
+
+    <div class="player">
+      <button class="play-btn" id="playBtn" onclick="toggle()" aria-label="Play stream">
+        <div class="triangle" id="triangle"></div>
+        <div class="pause" id="pause">
+          <div class="pause-bar"></div>
+          <div class="pause-bar"></div>
+        </div>
+      </button>
+      <span class="status" id="status">press play to listen</span>
+    </div>
+  </div>
+
+  <audio id="audio" src="https://radio.shoutcheap.com/proxy/rafael/stream" preload="none"></audio>
+
+  <script>
+    let playing = false;
+    const audio = document.getElementById('audio');
+    const triangle = document.getElementById('triangle');
+    const pause = document.getElementById('pause');
+    const status = document.getElementById('status');
+
+    function toggle() {
+      if (!playing) {
+        audio.play();
+        playing = true;
+        triangle.style.display = 'none';
+        pause.style.display = 'flex';
+        status.textContent = 'live — wind organ';
+      } else {
+        audio.pause();
+        playing = false;
+        triangle.style.display = 'block';
+        pause.style.display = 'none';
+        status.textContent = 'press play to listen';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wind Organ — My Ear in G</title>
+  <title>Wind Organ — Oakland / NYC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Times New Roman', Times, serif;
+      font-family: 'Josefin Sans', 'Futura', 'Century Gothic', sans-serif;
       color: #000000;
       min-height: 100vh;
+      position: relative;
       background-size: contain;
       background-position: center top;
       background-repeat: no-repeat;
@@ -24,7 +28,6 @@
       justify-content: center;
       align-items: center;
       padding: 60px 40px;
-      text-align: left;
     }
 
     .inner {
@@ -85,16 +88,101 @@
       color: #000000;
     }
 
+    .image-nav {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .image-nav-btn {
+      width: 32px;
+      height: 32px;
+      background-color: #4CBB17;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-nav-btn:hover {
+      background-color: #3da012;
+        }
+
+    .vhs-arrow-pair {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .vhs-arrow {
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    .vhs-arrow.back {
+      border-right: 8px solid #ffffff;
+    }
+
+    .vhs-arrow.forward {
+      border-left: 8px solid #ffffff;
+    }
+
+    .corner-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 100px;
+      z-index: 10;
+    }
+
+    .corner-btn img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: blur(2px);
+      opacity: 0.7;
+      transition: filter 0.25s ease, opacity 0.25s ease;
+    }
+
+    .corner-btn:hover img,
+    .corner-btn:active img,
+    .corner-btn:focus img {
+      filter: blur(0);
+      opacity: 1;
+    }
+
     @media (max-width: 480px) {
       .page { padding: 40px 24px; }
       .title { font-size: 15px; }
+
+      .inner {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .title { order: 1; }
+      .player { order: 2; }
+      .image-nav { order: 3; }
+
+      .corner-btn {
+        position: static;
+        margin-top: 16px;
+        width: 100px;
+        order: 4;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="inner">
-      <div class="title">Wind Organ<br>My Ear in G</div>
+      <a href="london.html" class="corner-btn">
+        <img src="uk-button-copy.png" alt="listen to London">
+      </a>
+      <div class="title">Wind Organ<br>Oakland / NYC</div>
       <div class="player">
         <button class="play-btn" onclick="toggle()" aria-label="Play stream">
           <div class="triangle" id="triangle"></div>
@@ -109,6 +197,16 @@
           <span class="status" id="status">press play to listen</span>
         </div>
       </div>
+      <div class="image-nav">
+        <button class="image-nav-btn" onclick="prevImage()" aria-label="previous image">
+          <div class="vhs-arrow back"></div>
+          <div class="vhs-arrow back second"></div>
+        </button>
+        <button class="image-nav-btn" onclick="nextImage()" aria-label="next image">
+          <div class="vhs-arrow forward"></div>
+          <div class="vhs-arrow forward second"></div>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -116,8 +214,22 @@
 
   <script>
     const images = ['flying.jpg', 'nyc.jpg', 'IMG_8740.jpg', 'IMG_8786.jpg', 'IMG_9011.jpg', 'IMG_9031.jpg', 'IMG_9950.jpg'];
-    const chosen = images[Math.floor(Math.random() * images.length)];
-    document.body.style.backgroundImage = 'url(' + chosen + ')';
+    let imageIndex = Math.floor(Math.random() * images.length);
+
+    function setBackground(index) {
+      document.body.style.backgroundImage = 'url(' + images[index] + ')';
+    }
+    setBackground(imageIndex);
+
+    function nextImage() {
+      imageIndex = (imageIndex + 1) % images.length;
+      setBackground(imageIndex);
+    }
+
+    function prevImage() {
+      imageIndex = (imageIndex - 1 + images.length) % images.length;
+      setBackground(imageIndex);
+    }
 
     let playing = false;
     const audio = document.getElementById('audio');

@@ -111,8 +111,19 @@
       color: #000000;
     }
 
-    .image-nav {
+    .bottom-row {
       margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .mobile-corner-btn {
+      display: none;
+    }
+
+    .image-nav {
       display: flex;
       gap: 8px;
     }
@@ -164,13 +175,17 @@
 
       .title { order: 1; }
       .player { order: 2; }
-      .image-nav { order: 3; }
+      .bottom-row { order: 3; }
 
-      .corner-btn {
+      a.corner-btn:not(.mobile-corner-btn) {
+        display: none;
+      }
+
+      .mobile-corner-btn {
+        display: block;
         position: static;
-        margin-top: 16px;
-        width: 100px;
-        order: 4;
+        width: 60px;
+        flex-shrink: 0;
       }
     }
   </style>
@@ -199,19 +214,24 @@
         </div>
       </div>
 
-      <div class="image-nav">
-        <button class="image-nav-btn" onclick="prevImage()" aria-label="previous image">
-          <div class="vhs-arrow-pair">
-            <div class="vhs-arrow back"></div>
-            <div class="vhs-arrow back"></div>
-          </div>
-        </button>
-        <button class="image-nav-btn" onclick="nextImage()" aria-label="next image">
-          <div class="vhs-arrow-pair">
-            <div class="vhs-arrow forward"></div>
-            <div class="vhs-arrow forward"></div>
-          </div>
-        </button>
+      <div class="bottom-row">
+        <div class="image-nav">
+          <button class="image-nav-btn" onclick="prevImage()" aria-label="previous image">
+            <div class="vhs-arrow-pair">
+              <div class="vhs-arrow back"></div>
+              <div class="vhs-arrow back"></div>
+            </div>
+          </button>
+          <button class="image-nav-btn" onclick="nextImage()" aria-label="next image">
+            <div class="vhs-arrow-pair">
+              <div class="vhs-arrow forward"></div>
+              <div class="vhs-arrow forward"></div>
+            </div>
+          </button>
+        </div>
+        <a href="index.html" class="corner-btn mobile-corner-btn">
+          <img src="99-button-copy.png" alt="listen to Oakland / NYC">
+        </a>
       </div>
     </div>
   </div>
@@ -278,4 +298,5 @@
   </script>
 </body>
 </html>
+
 

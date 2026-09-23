@@ -14,7 +14,6 @@
       font-family: 'Josefin Sans', 'Futura', 'Century Gothic', sans-serif;
       color: #000000;
       min-height: 100vh;
-      position: relative;
       background-size: contain;
       background-position: center top;
       background-repeat: no-repeat;
@@ -33,6 +32,34 @@
     .inner {
       width: 100%;
       max-width: 420px;
+    }
+
+    .corner-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 100px;
+      z-index: 10;
+    }
+
+    .corner-btn img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: blur(2px);
+      opacity: 0.7;
+      transition: filter 0.25s ease, opacity 0.25s ease;
+    }
+
+    .corner-btn:hover img,
+    .corner-btn:active img,
+    .corner-btn:focus img {
+      filter: blur(0);
+      opacity: 1;
+    }
+
+    .mobile-corner-btn {
+      display: none;
     }
 
     .title {
@@ -88,8 +115,15 @@
       color: #000000;
     }
 
+    .bottom-row {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
     .image-nav {
-      margin-top: 16px;
       display: flex;
       gap: 8px;
     }
@@ -107,7 +141,7 @@
 
     .image-nav-btn:hover {
       background-color: #3da012;
-        }
+    }
 
     .vhs-arrow-pair {
       display: flex;
@@ -130,30 +164,6 @@
       border-left: 8px solid #ffffff;
     }
 
-    .corner-btn {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      width: 100px;
-      z-index: 10;
-    }
-
-    .corner-btn img {
-      width: 100%;
-      height: auto;
-      display: block;
-      filter: blur(2px);
-      opacity: 0.7;
-      transition: filter 0.25s ease, opacity 0.25s ease;
-    }
-
-    .corner-btn:hover img,
-    .corner-btn:active img,
-    .corner-btn:focus img {
-      filter: blur(0);
-      opacity: 1;
-    }
-
     @media (max-width: 480px) {
       .page { padding: 40px 24px; }
       .title { font-size: 15px; }
@@ -165,13 +175,17 @@
 
       .title { order: 1; }
       .player { order: 2; }
-      .image-nav { order: 3; }
+      .bottom-row { order: 3; }
 
-      .corner-btn {
+      a.corner-btn:not(.mobile-corner-btn) {
+        display: none;
+      }
+
+      .mobile-corner-btn {
+        display: block;
         position: static;
-        margin-top: 16px;
-        width: 100px;
-        order: 4;
+        width: 60px;
+        flex-shrink: 0;
       }
     }
   </style>
@@ -182,7 +196,9 @@
       <a href="london.html" class="corner-btn">
         <img src="uk-button-copy.png" alt="listen to London">
       </a>
+
       <div class="title">Wind Organ<br>Oakland / NYC</div>
+
       <div class="player">
         <button class="play-btn" onclick="toggle()" aria-label="Play stream">
           <div class="triangle" id="triangle"></div>
@@ -197,15 +213,25 @@
           <span class="status" id="status">press play to listen</span>
         </div>
       </div>
-      <div class="image-nav">
-        <button class="image-nav-btn" onclick="prevImage()" aria-label="previous image">
-          <div class="vhs-arrow back"></div>
-          <div class="vhs-arrow back second"></div>
-        </button>
-        <button class="image-nav-btn" onclick="nextImage()" aria-label="next image">
-          <div class="vhs-arrow forward"></div>
-          <div class="vhs-arrow forward second"></div>
-        </button>
+
+      <div class="bottom-row">
+        <div class="image-nav">
+          <button class="image-nav-btn" onclick="prevImage()" aria-label="previous image">
+            <div class="vhs-arrow-pair">
+              <div class="vhs-arrow back"></div>
+              <div class="vhs-arrow back"></div>
+            </div>
+          </button>
+          <button class="image-nav-btn" onclick="nextImage()" aria-label="next image">
+            <div class="vhs-arrow-pair">
+              <div class="vhs-arrow forward"></div>
+              <div class="vhs-arrow forward"></div>
+            </div>
+          </button>
+        </div>
+        <a href="london.html" class="corner-btn mobile-corner-btn">
+          <img src="uk-button-copy.png" alt="listen to London">
+        </a>
       </div>
     </div>
   </div>
@@ -267,3 +293,4 @@
   </script>
 </body>
 </html>
+

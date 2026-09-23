@@ -4,11 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wind Organ — London</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Futura', 'Century Gothic', sans-serif;
+      font-family: 'Josefin Sans', 'Futura', 'Century Gothic', sans-serif;
       color: #000000;
       min-height: 100vh;
       background-size: contain;
@@ -29,6 +32,30 @@
     .inner {
       width: 100%;
       max-width: 420px;
+    }
+
+    .corner-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 100px;
+      z-index: 10;
+    }
+
+    .corner-btn img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: blur(2px);
+      opacity: 0.7;
+      transition: filter 0.25s ease, opacity 0.25s ease;
+    }
+
+    .corner-btn:hover img,
+    .corner-btn:active img,
+    .corner-btn:focus img {
+      filter: blur(0);
+      opacity: 1;
     }
 
     .title {
@@ -84,16 +111,79 @@
       color: #000000;
     }
 
+    .image-nav {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .image-nav-btn {
+      width: 32px;
+      height: 32px;
+      background-color: #B23A3A;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-nav-btn:hover {
+      background-color: #9A2F2F;
+        }
+
+    .vhs-arrow-pair {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .vhs-arrow {
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    .vhs-arrow.back {
+      border-right: 8px solid #ffffff;
+    }
+
+    .vhs-arrow.forward {
+      border-left: 8px solid #ffffff;
+    }
+
     @media (max-width: 480px) {
       .page { padding: 40px 24px; }
       .title { font-size: 15px; }
+
+      .inner {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .title { order: 1; }
+      .player { order: 2; }
+      .image-nav { order: 3; }
+
+      .corner-btn {
+        position: static;
+        margin-top: 16px;
+        width: 100px;
+        order: 4;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="inner">
+      <a href="index.html" class="corner-btn">
+        <img src="99-button-copy.png" alt="listen to Oakland / NYC">
+      </a>
+
       <div class="title">Wind Organ<br>London</div>
+
       <div class="player">
         <button class="play-btn" onclick="toggle()" aria-label="Play stream">
           <div class="triangle" id="triangle"></div>
@@ -108,16 +198,43 @@
           <span class="status" id="status">press play to listen</span>
         </div>
       </div>
+
+      <div class="image-nav">
+        <button class="image-nav-btn" onclick="prevImage()" aria-label="previous image">
+          <div class="vhs-arrow-pair">
+            <div class="vhs-arrow back"></div>
+            <div class="vhs-arrow back"></div>
+          </div>
+        </button>
+        <button class="image-nav-btn" onclick="nextImage()" aria-label="next image">
+          <div class="vhs-arrow-pair">
+            <div class="vhs-arrow forward"></div>
+            <div class="vhs-arrow forward"></div>
+          </div>
+        </button>
+      </div>
     </div>
   </div>
 
   <audio id="audio" src="https://radio.shoutcheap.com/proxy/rafael12/live" preload="none"></audio>
 
   <script>
-    const images = ['london1.jpeg', 'london2.jpeg', 'london4.jpeg', 'london5.JPEG', 'london6.jpeg', 'london7.jpeg', 'london8.jpeg' ];  // add filenames here once photos are uploaded, e.g. 'london1.jpg', 'london2.jpg'
-    if (images.length > 0) {
-      const chosen = images[Math.floor(Math.random() * images.length)];
-      document.body.style.backgroundImage = 'url(' + chosen + ')';
+    const images = ['london1.jpeg', 'london2.jpeg', 'london4.jpeg', 'london5.jpeg', 'london6.jpeg', 'london7.jpeg', 'london8.jpeg'];
+    let imageIndex = Math.floor(Math.random() * images.length);
+
+    function setBackground(index) {
+      document.body.style.backgroundImage = 'url(' + images[index] + ')';
+    }
+    setBackground(imageIndex);
+
+    function nextImage() {
+      imageIndex = (imageIndex + 1) % images.length;
+      setBackground(imageIndex);
+    }
+
+    function prevImage() {
+      imageIndex = (imageIndex - 1 + images.length) % images.length;
+      setBackground(imageIndex);
     }
 
     let playing = false;
@@ -133,11 +250,12 @@
         timeZone: 'Europe/London',
         hour: '2-digit', minute: '2-digit', hour12: false
       });
-      const tzName = new Intl.DateTimeFormat('en-US', {
+      const offsetPart = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Europe/London',
-        timeZoneName: 'short'
+        timeZoneName: 'shortOffset'
       }).formatToParts(now).find(part => part.type === 'timeZoneName').value;
-      clock.textContent = time + ' ' + tzName;
+      const label = offsetPart.includes('+1') ? 'BST' : 'GMT';
+      clock.textContent = time + ' ' + label;
     }
     updateClock();
     setInterval(updateClock, 1000);
@@ -160,3 +278,4 @@
   </script>
 </body>
 </html>
+

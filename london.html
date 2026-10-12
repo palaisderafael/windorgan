@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    [hidden] { display: none !important; }
 
     body {
       font-family: 'Josefin Sans', 'Futura', 'Century Gothic', sans-serif;
@@ -104,12 +105,22 @@
     .pause { display: none; gap: 3px; }
     .pause-bar { width: 4px; height: 14px; background: #ffffff; }
 
-    .info { display: flex; flex-direction: column; gap: 4px; }
+    .info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 
-    .location, .time, .status {
+    .location, .time, .status, .elapsed {
       font-size: 13px;
       color: #000000;
     }
+
+    .status { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .bar {
+      height: 8px;
+      border: 1px solid #000000;
+      margin: 4px 0 2px;
+      cursor: pointer;
+    }
+    .bar-fill { height: 100%; width: 0; background: #B23A3A; }
 
     .bottom-row {
       margin-top: 16px;
@@ -164,6 +175,40 @@
       border-left: 8px solid #ffffff;
     }
 
+    /* ---- Past days ---- */
+    .days { margin-top: 40px; }
+
+    .days-caption, .month {
+      font-size: 13px;
+      margin: 0 0 8px;
+      text-shadow: 0 1px 4px rgba(255,255,255,0.9);
+    }
+    .month { margin-top: 20px; }
+
+    .day {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      width: 100%;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 13px;
+      color: #000000;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.60);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid #000000;
+      margin-top: -1px;
+      cursor: pointer;
+    }
+    .day:first-of-type { margin-top: 0; }
+    .day:hover { background: rgba(255, 255, 255, 0.85); }
+    .day.active { border-left: 6px solid #B23A3A; padding-left: 7px; }
+    .day .meta { white-space: nowrap; }
+    .play-btn:focus-visible, .day:focus-visible, .bar:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+
     @media (max-width: 480px) {
       .page { padding: 40px 24px; }
       .title { font-size: 15px; }
@@ -176,6 +221,9 @@
       .title { order: 1; }
       .player { order: 2; }
       .bottom-row { order: 3; }
+      .days { order: 4; }
+
+      .day { flex-direction: column; gap: 2px; }
 
       a.corner-btn:not(.mobile-corner-btn) {
         display: none;
@@ -211,6 +259,8 @@
           <span class="location">Serpentine South Gallery</span>
           <span class="time" id="clock"></span>
           <span class="status" id="status">press play to listen</span>
+          <div class="bar" id="bar" hidden aria-label="Seek"><div class="bar-fill" id="fill"></div></div>
+          <span class="elapsed" id="elapsed" hidden>0:00 / 0:00</span>
         </div>
       </div>
 
@@ -233,10 +283,13 @@
           <img src="99-button-copy.png" alt="listen to Oakland / NYC">
         </a>
       </div>
+
+      <!-- Filled in from sessions.json. Stays hidden if that file is missing. -->
+      <div class="days" id="days" hidden></div>
     </div>
   </div>
 
-  <audio id="audio" src="https://radio.shoutcheap.com/proxy/rafael12/live" preload="none"></audio>
+  <audio id="audio" preload="none"></audio>
 
   <script>
     const images = ['london1.jpeg', 'london2.jpeg', 'london4.jpeg', 'london5.JPEG', 'london6.jpeg', 'london7.jpeg', 'london8.jpeg'];
@@ -257,12 +310,16 @@
       setBackground(imageIndex);
     }
 
-    let playing = false;
+    const LIVE_URL = 'https://radio.shoutcheap.com/proxy/rafael12/live';
     const audio = document.getElementById('audio');
     const triangle = document.getElementById('triangle');
     const pause = document.getElementById('pause');
     const status = document.getElementById('status');
     const clock = document.getElementById('clock');
+    const bar = document.getElementById('bar');
+    const fill = document.getElementById('fill');
+    const elapsed = document.getElementById('elapsed');
+    const daysEl = document.getElementById('days');
 
     function updateClock() {
       const now = new Date();
@@ -280,21 +337,186 @@
     updateClock();
     setInterval(updateClock, 1000);
 
+    // ---- Player: the live stream, or one of the past days ----
+    let mode = 'idle';      // 'idle', 'live' or 'archive'
+    let days = [];          // one entry per day, from sessions.json
+    let tracks = [];        // playlist: one entry per audio file, in order
+    let current = -1;       // index into tracks while mode is 'archive'
+    let rows = [];          // one button per day
+    let liveRow = null;
+
+    function fmtTime(s) {
+      if (!isFinite(s)) return '0:00';
+      s = Math.floor(s);
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+      const mm = h ? String(m).padStart(2, '0') : String(m);
+      return (h ? h + ':' : '') + mm + ':' + String(sec).padStart(2, '0');
+    }
+
+    function parseDay(str) {
+      const [y, m, d] = str.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    function dayLabel(str) {
+      return parseDay(str).toLocaleDateString('en-GB',
+        { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    function monthLabel(str) {
+      return parseDay(str).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    }
+    function trackLabel(t) {
+      const base = dayLabel(days[t.day].date);
+      return t.of > 1 ? base + ' · part ' + (t.part + 1) + ' of ' + t.of : base;
+    }
+
+    function updateButton() {
+      const isPlaying = !audio.paused;
+      triangle.style.display = isPlaying ? 'none' : 'block';
+      pause.style.display = isPlaying ? 'flex' : 'none';
+    }
+
+    function showArchiveControls(show) {
+      bar.hidden = !show;
+      elapsed.hidden = !show;
+      if (!show) fill.style.width = '0%';
+    }
+
+    function markActive() {
+      if (liveRow) liveRow.classList.toggle('active', mode === 'live');
+      const activeDay = mode === 'archive' && current >= 0 ? tracks[current].day : -1;
+      rows.forEach((r, i) => r && r.classList.toggle('active', i === activeDay));
+    }
+
+    function goLive() {
+      mode = 'live';
+      current = -1;
+      audio.src = LIVE_URL;               // a fresh connection, so it plays what is on now
+      showArchiveControls(false);
+      status.textContent = 'connecting…';
+      markActive();
+      audio.play().catch(() => { status.textContent = 'press play to listen'; });
+    }
+
+    function playTrack(i) {
+      if (i < 0 || i >= tracks.length) return;
+      mode = 'archive';
+      current = i;
+      audio.src = tracks[i].file;         // this also drops the live connection
+      showArchiveControls(true);
+      elapsed.textContent = '0:00 / 0:00';
+      status.textContent = 'loading…';
+      markActive();
+      audio.play().catch(() => { status.textContent = 'press play to start'; });
+    }
+
+    function playDay(dayIndex) {
+      playTrack(tracks.findIndex((t) => t.day === dayIndex));
+    }
+
     function toggle() {
-      if (!playing) {
-        audio.play();
-        playing = true;
-        triangle.style.display = 'none';
-        pause.style.display = 'flex';
-        status.textContent = 'live — wind organ';
+      if (mode === 'idle' || (mode === 'live' && audio.paused)) { goLive(); return; }
+      if (audio.paused) audio.play(); else audio.pause();
+    }
+
+    audio.addEventListener('play', updateButton);
+    audio.addEventListener('pause', () => {
+      updateButton();
+      if (!audio.ended) status.textContent = mode === 'archive' ? 'paused' : 'press play to listen';
+    });
+    audio.addEventListener('playing', () => {
+      status.textContent = mode === 'archive' && current >= 0 ? trackLabel(tracks[current]) : 'live — wind organ';
+    });
+    audio.addEventListener('waiting', () => { status.textContent = 'loading…'; });
+    audio.addEventListener('error', () => {
+      updateButton();
+      status.textContent = mode === 'archive' ? 'could not load this one' : 'could not connect — press play to retry';
+    });
+    audio.addEventListener('timeupdate', () => {
+      if (mode !== 'archive') return;
+      const dur = audio.duration;
+      elapsed.textContent = fmtTime(audio.currentTime) + ' / ' + fmtTime(dur);
+      fill.style.width = (isFinite(dur) && dur > 0 ? (audio.currentTime / dur) * 100 : 0) + '%';
+    });
+    audio.addEventListener('ended', () => {
+      updateButton();
+      if (mode === 'archive') {
+        if (current + 1 < tracks.length) playTrack(current + 1);
+        else status.textContent = 'end of the days';
       } else {
-        audio.pause();
-        playing = false;
-        triangle.style.display = 'block';
-        pause.style.display = 'none';
         status.textContent = 'press play to listen';
       }
+    });
+
+    bar.addEventListener('click', (e) => {
+      if (mode !== 'archive' || !isFinite(audio.duration) || audio.duration <= 0) return;
+      const r = bar.getBoundingClientRect();
+      audio.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * audio.duration;
+    });
+
+    // ---- Past days list ----
+    function buildTracks() {
+      tracks = [];
+      days.forEach((d, di) => {
+        const parts = d.parts && d.parts.length ? d.parts : [{ file: d.file }];
+        parts.forEach((p, pi) => tracks.push({ day: di, part: pi, of: parts.length, file: p.file }));
+      });
     }
+
+    function makeRow(labelText, metaText, onClick) {
+      const b = document.createElement('button');
+      b.className = 'day';
+      const label = document.createElement('span');
+      label.textContent = labelText;
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = metaText;
+      b.append(label, meta);
+      b.addEventListener('click', onClick);
+      return b;
+    }
+
+    function renderDays() {
+      daysEl.textContent = '';
+      rows = [];
+      if (!days.length) { daysEl.hidden = true; return; }
+
+      liveRow = makeRow('Live now', 'as it happens', goLive);
+      daysEl.appendChild(liveRow);
+
+      const caption = document.createElement('div');
+      caption.className = 'days-caption';
+      caption.style.marginTop = '24px';
+      caption.textContent = 'Past days';
+      daysEl.appendChild(caption);
+
+      let lastMonth = '';
+      days.forEach((d, i) => {
+        const month = monthLabel(d.date);
+        if (month !== lastMonth) {
+          const h = document.createElement('div');
+          h.className = 'month';
+          if (lastMonth === '') h.style.marginTop = '0';
+          h.textContent = month;
+          daysEl.appendChild(h);
+          lastMonth = month;
+        }
+        const mins = (x) => (x < 10 ? String(Math.round(x * 10) / 10) : String(Math.round(x)));
+        const length = d.excerpt_minutes
+          ? mins(d.excerpt_minutes) + ' min excerpt of ' + mins(d.minutes)
+          : mins(d.minutes) + ' min';
+        const peak = d.peak != null ? ' · peak ' + d.peak + ' m/s' : '';   // leave out "peak" in sessions.json to hide it
+        const row = makeRow(dayLabel(d.date), length + peak, () => playDay(i));
+        daysEl.appendChild(row);
+        rows[i] = row;
+      });
+      daysEl.hidden = false;
+      markActive();
+    }
+
+    fetch('sessions.json', { cache: 'no-cache' })
+      .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then((data) => { days = data.days || []; buildTracks(); renderDays(); })
+      .catch(() => { daysEl.hidden = true; });    // no list: the page just stays a live player
   </script>
 </body>
 </html>

@@ -1,0 +1,32 @@
+{
+ "generated": "2026-10-12T03:34:31",
+ "days": [
+  {
+   "date": "2026-10-07",
+   "file": "audio/2026-10-07.mp3",
+   "minutes": 87.1,
+   "wind_seconds": 3073,
+   "peak": 9.6,
+   "rows": 76397,
+   "kb": 40847
+  },
+  {
+   "date": "2026-10-05",
+   "file": "audio/2026-10-05.mp3",
+   "minutes": 4.5,
+   "wind_seconds": 66,
+   "peak": 15.0,
+   "rows": 23485,
+   "kb": 2144
+  },
+  {
+   "date": "2026-10-04",
+   "file": "audio/2026-10-04.mp3",
+   "minutes": 59.4,
+   "wind_seconds": 1645,
+   "peak": 8.7,
+   "rows": 52694,
+   "kb": 27871
+  }
+ ]
+}

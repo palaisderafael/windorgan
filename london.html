@@ -501,9 +501,7 @@
           lastMonth = month;
         }
         const mins = (x) => (x < 10 ? String(Math.round(x * 10) / 10) : String(Math.round(x)));
-        const length = d.excerpt_minutes
-          ? mins(d.excerpt_minutes) + ' min excerpt of ' + mins(d.minutes)
-          : mins(d.minutes) + ' min';
+        const length = mins(d.excerpt_minutes || d.minutes) + ' min';
         const peak = d.peak != null ? ' · peak ' + d.peak + ' m/s' : '';   // leave out "peak" in sessions.json to hide it
         const row = makeRow(dayLabel(d.date), length + peak, () => playDay(i));
         daysEl.appendChild(row);

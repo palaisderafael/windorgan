@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wind Organ Voices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Same look as windorgan.com: Josefin Sans, white ground, 1px black frames, square green buttons, a photo behind a frosted panel.
+   Layout: one narrow column; each friend is a frosted panel with the poem, a player and the note strip. Single look, light only, like the site. */
+:root{ color-scheme:light; --ink:#000; --green:#4CBB17; --green-dark:#3da012; --panel:rgba(255,255,255,.72); --soft:#7a7a7a; --line:#000; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Josefin Sans','Futura','Century Gothic',sans-serif;
+  color:var(--ink); background-color:#fff; min-height:100vh;
+  padding-left:max(24px,env(safe-area-inset-left,0px)); padding-right:max(24px,env(safe-area-inset-right,0px));
+}
+/* the photo fills the whole screen and stays put while the page scrolls; a fixed layer works on phones too */
+body::before{content:"";position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center;background-repeat:no-repeat;background-image:var(--bg,none)}
+.page{display:flex;flex-direction:column;align-items:center;padding-block:60px 80px}
+.inner{width:100%;max-width:520px}
+.corner-btn{position:fixed;top:20px;left:20px;width:100px;z-index:10}
+.corner-btn img{width:100%;height:auto;display:block;filter:blur(2px);opacity:.7;transition:filter .25s ease,opacity .25s ease}
+.corner-btn:hover img,.corner-btn:focus img{filter:blur(0);opacity:1}
+.title{font-size:16px;font-weight:normal;line-height:1.6;margin-bottom:32px;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+.title a{color:inherit;text-decoration:none;border-bottom:1px solid transparent}
+.title a:hover{border-color:currentColor}
+.lede{font-size:15px;line-height:1.6;margin:-12px 0 32px;max-width:40ch;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+.entry{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:24px;margin-bottom:24px}
+.who{font-size:13px;margin-bottom:12px}
+.spk{font-weight:500}
+.piece{font-size:16px;font-weight:500;margin:2px 0 18px}
+.poem{font-size:17px;line-height:1.7}
+.stanza{margin:0 0 1.1em}
+.line{display:block}
+.w{transition:color .12s,background-color .12s}
+.poem.playing .w{color:var(--soft)}
+.poem.playing .w.done{color:var(--ink)}
+.poem.playing .w.now{color:var(--ink);background:var(--green)}
+.note{font-size:13px;color:var(--soft);margin-top:16px;line-height:1.5}
+.player{border:1px solid var(--line);padding:16px 18px;display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.6);margin-top:24px}
+.play-btn{width:40px;height:40px;min-width:40px;background:var(--green);border:none;border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.play-btn:hover{background:var(--green-dark)}
+.play-btn:disabled{background:#cfcfcf;cursor:default}
+.play-btn:focus-visible,.scrub:focus-visible,.image-nav-btn:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.triangle{width:0;height:0;border-style:solid;border-width:7px 0 7px 13px;border-color:transparent transparent transparent #fff;margin-left:3px}
+.pause{display:flex;gap:3px}.pause-bar{width:4px;height:14px;background:#fff}
+.info{display:flex;flex-direction:column;gap:4px;font-size:13px;min-width:0}
+.time{font-variant-numeric:tabular-nums}
+.scrub{display:block;width:100%;height:auto;margin-top:14px;cursor:pointer;touch-action:manipulation}
+.scrub .org{fill:#000;opacity:.78}
+.scrub .glk{fill:var(--green)}
+.scrub .grid{stroke:rgba(0,0,0,.14);stroke-width:1}
+.scrub .head{stroke:var(--green);stroke-width:2.5}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--soft);margin-top:10px}
+.legend i{display:inline-block;width:14px;height:6px;background:#000;opacity:.78;margin-right:6px;vertical-align:middle}
+.legend i.g{width:8px;height:8px;border-radius:50%;background:var(--green);opacity:1}
+.voice{margin-top:14px;border:1px dashed rgba(0,0,0,.4);padding:10px 14px;font-size:13px;color:var(--soft);display:flex;align-items:center;gap:12px}
+.voice .sq{width:20px;height:20px;background:#cfcfcf;flex:none}
+.voicebox{margin-top:24px;border:1px solid var(--line);padding:16px 18px;background:rgba(255,255,255,.6)}
+.vtitle{font-size:13px;margin-bottom:12px}
+.vrow{display:flex;align-items:center;gap:16px;padding:10px 0;border-top:1px solid rgba(0,0,0,.14)}
+.vrow:first-of-type{border-top:none;padding-top:0}
+.vrow .play-btn{width:34px;height:34px;min-width:34px}
+.vrow .info{gap:2px}
+.vrow.missing .play-btn{background:#cfcfcf;cursor:default}
+.vrow.missing .info{color:var(--soft)}
+.both{margin-top:6px;display:flex;align-items:center;gap:14px;font-size:13px}
+.both-btn{background:var(--green);color:#fff;border:none;padding:0 16px;height:36px;font:500 13px 'Josefin Sans','Futura',sans-serif;cursor:pointer}
+.both-btn:hover{background:var(--green-dark)}
+.both-btn:disabled{background:#cfcfcf;cursor:default}
+.both-btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.both-hint{color:var(--soft)}
+.pending .poem .bar{display:block;height:10px;background:rgba(0,0,0,.1);margin:0 0 12px}
+.pending .player{opacity:.6}
+details{margin:36px 0 0;font-size:15px;line-height:1.6;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+summary{cursor:pointer;font-size:13px;padding:4px 0}
+.rules{list-style:none;margin-top:12px;display:grid;gap:8px}
+.rules li{display:grid;grid-template-columns:110px 1fr;gap:12px}
+.rules b{font-weight:500;font-size:13px;line-height:1.9}
+.bottom-row{margin:4px 0 28px;display:flex;justify-content:space-between;align-items:center}
+.image-nav{display:flex;gap:8px}
+.image-nav-btn{width:32px;height:32px;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.image-nav-btn:hover{background:var(--green-dark)}
+.vhs-arrow-pair{display:flex;align-items:center;gap:3px}
+.vhs-arrow{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent}
+.vhs-arrow.back{border-right:8px solid #fff}.vhs-arrow.forward{border-left:8px solid #fff}
+/* wide screens: the pieces sit in columns, short cards stacking under each other. Phones and narrow windows keep one column. */
+@media(min-width:760px){
+  .inner{max-width:1140px}
+  #entries{column-width:340px;column-gap:24px}
+  #entries .entry{break-inside:avoid;margin-bottom:24px}
+}
+@media(max-width:480px){
+  .corner-btn{position:static;width:60px;margin-bottom:20px;display:block}
+  .entry{padding:18px}.rules li{grid-template-columns:1fr;gap:0}
+}
+@media(prefers-reduced-motion:reduce){.w,.corner-btn img{transition:none}}
+</style>
+
+</head>
+<body>
+<div class="page"><div class="inner">
+  <a href="london.html" class="corner-btn"><img src="uk-button-copy.png" alt="listen to London"></a>
+  <div class="title">Wind Organ<br>Voices &nbsp;·&nbsp; <a href="index.html">Oakland / NYC</a></div>
+  <p class="lede">The wind organ reads written words and plays what it finds in them. Press play and the text lights up as the organ reaches each word.</p>
+
+  <div class="bottom-row">
+    <div class="image-nav">
+      <button class="image-nav-btn" onclick="prevImage()" aria-label="previous image"><div class="vhs-arrow-pair"><div class="vhs-arrow back"></div><div class="vhs-arrow back"></div></div></button>
+      <button class="image-nav-btn" onclick="nextImage()" aria-label="next image"><div class="vhs-arrow-pair"><div class="vhs-arrow forward"></div><div class="vhs-arrow forward"></div></div></button>
+    </div>
+  </div>
+
+  <main id="entries"></main>
+
+  <details>
+    <summary>how the organ reads</summary>
+    <ul class="rules">
+      <li><b>vowels</b><span>The organ sings them. u, o, a, e, i climb from low to high, all inside G major.</span></li>
+      <li><b>hard letters</b><span>b c d g k p q t x strike the glockenspiel, each with its own bright note.</span></li>
+      <li><b>soft letters</b><span>s f h l m n r v w z and the rest make no sound. They only take time, like breath.</span></li>
+      <li><b>capitals</b><span>A capitalised word is firmer. A word in capitals is loud.</span></li>
+      <li><b>punctuation</b><span>Commas are breaths, full stops are rests, line ends are rests, and a blank line is a long one.</span></li>
+    </ul>
+  </details>
+
+</div></div>
+
+<script>
+/* ---- the photo behind the page: this page has its own photos, separate from the other pages ----
+   Name them voices-1.jpg, voices-2.jpg, voices-3.jpg ... and put them next to this page.
+   The page counts them by itself and stops at the first number that is missing. */
+const images = [];
+let imageIndex = 0;
+function setBackground(i){ if (images.length) document.documentElement.style.setProperty('--bg', 'url(' + images[i] + ')'); }
+function nextImage(){ if (images.length){ imageIndex = (imageIndex + 1) % images.length; setBackground(imageIndex); } }
+function prevImage(){ if (images.length){ imageIndex = (imageIndex - 1 + images.length) % images.length; setBackground(imageIndex); } }
+(function findPhotos(n){
+  const im = new Image();
+  im.onload = () => {
+    images.push('voices-' + n + '.jpg');
+    if (images.length === 1){ imageIndex = 0; setBackground(0); }
+    findPhotos(n + 1);
+  };
+  im.onerror = () => { if (images.length > 1){ imageIndex = Math.floor(Math.random() * images.length); setBackground(imageIndex); } };
+  im.src = 'voices-' + n + '.jpg';
+})(1);
+
+/* ---- THE PIECES ----
+   Add one block per piece, newest first or last, as you like.
+   base      the name you gave text_organ.py with --name. The page loads base.json and base.mp3 from this same folder.
+   who       small label above the text (a name, "Friend 1", "Scene 1" ...)
+   title     optional heading; leave it out if the text has its own
+   speakers  true if you made it with --speakers (lines like "Q:" and "WOMAN:" are then shown but not played)
+   voice     optional: a recording of the voice and the organ's reading of it, with a "play both together" button
+             voice: { original: 'friend1-voice.mp3', organ: 'friend1-voice-organ.mp3' }
+   text      the exact text you gave text_organ.py. Leave out base and text for a voice message with no typed text. */
+const ENTRIES = [
+  { base: 'poem1', who: 'Scene 1', speakers: false ,
+    text: String.raw`1. BUS STOP
+
+Q: Can I play you something? It's an organ, but it's run by wind.
+WOMAN: Wind? Like, a person blowing?
+Q: No, there's a meter on a window and the wind picks the notes.
+WOMAN: Turn it up.
+Q: That's all the way up.
+WOMAN: Then hold it closer. My mother used to hum like that when she thought nobody was in the house. Same three notes and then she'd lose it.
+Q: Is it music?
+WOMAN: I don't think it's for anyone. That's what I like. Is it going to do the same thing again?
+Q: No.
+WOMAN: Good. Then I'm glad I was here.` },
+
+  /* a voice message with no typed text: the recording, the organ's reading of it, and play both together */
+  { who: 'Voice message 1',
+    voice: { original: 'voicemail1.mp3', organ: 'voicemail1-organ.mp3' } }
+];
+
+const STOPPERS = new Map();
+function claim(id){ STOPPERS.forEach((fn, k) => { if (k !== id) fn(); }); }
+const $ = (s, r=document) => r.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const PLAY = '<div class="triangle"></div>';
+const PAUSE = '<div class="pause"><div class="pause-bar"></div><div class="pause-bar"></div></div>';
+const fmt = s => { s = Math.max(0, Math.round(s || 0)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); };
+const WORD = /([A-Za-zÀ-ɏ][A-Za-zÀ-ɏ'’]*)/;
+const LABEL = /^\s*([A-Z][A-Z0-9 .]{0,20}):\s*/;
+
+
+/* ---- the voice message: the recording, the organ's reading of it, and a button that plays both at once ---- */
+function buildVoice(v, id){
+  const box = el('div', 'voicebox');
+  box.appendChild(el('div', 'vtitle', 'the voice message'));
+  const rows = [];
+  function row(label, src){
+    const r = el('div', 'vrow');
+    r.innerHTML = '<button class="play-btn" aria-label="Play ' + label + '">' + PLAY + '</button><div class="info"><span>' + label + '</span><span class="time">–:––</span></div>';
+    const a = new Audio(); a.preload = 'metadata'; a.src = src;
+    const b = $('.play-btn', r), t = $('.time', r), o = {r, a, b, t, ok:false};
+    const upd = () => { t.textContent = fmt(a.currentTime) + ' / ' + fmt(a.duration); };
+    a.addEventListener('loadedmetadata', () => { o.ok = true; r.classList.remove('missing'); upd(); sync(); });
+    a.addEventListener('timeupdate', upd);
+    a.addEventListener('play', () => { b.innerHTML = PAUSE; });
+    a.addEventListener('pause', () => { b.innerHTML = PLAY; });
+    a.addEventListener('ended', () => { a.currentTime = 0; upd(); });
+    a.addEventListener('error', () => { r.classList.add('missing'); b.disabled = true; t.textContent = 'add ' + src + ' to play'; sync(); });
+    b.addEventListener('click', () => { if (!o.ok) return; if (a.paused){ claim(id); a.play(); } else a.pause(); });
+    box.appendChild(r); rows.push(o); return o;
+  }
+  const orig = row('original recording', v.original), org = row('organ reading of the voice', v.organ);
+  const both = el('div', 'both', '<button class="both-btn" disabled>play both together</button><span class="both-hint"></span>');
+  const bb = $('.both-btn', both), hint = $('.both-hint', both);
+  function sync(){ const ready = orig.ok && org.ok; bb.disabled = !ready; hint.textContent = ready ? 'the voice and the organ start at the same moment' : 'available when both recordings are added'; }
+  sync();
+  bb.addEventListener('click', () => {
+    if (!orig.a.paused || !org.a.paused){ orig.a.pause(); org.a.pause(); return; }
+    claim(id); orig.a.currentTime = 0; org.a.currentTime = 0;
+    Promise.all([orig.a.play(), org.a.play()]).then(() => { bb.textContent = 'pause both'; }).catch(() => {});
+  });
+  [orig.a, org.a].forEach(a => a.addEventListener('pause', () => { if (orig.a.paused && org.a.paused) bb.textContent = 'play both together'; }));
+  STOPPERS.set(id, () => { orig.a.pause(); org.a.pause(); });
+  box.appendChild(both);
+  return box;
+}
+
+/* ---- one piece: the text, the organ's reading with the words lighting up, the note strip ---- */
+function buildEntry(e){
+  const sec = el('section', 'entry');
+  sec.appendChild(el('div', 'who', e.who));
+  if (e.title) sec.appendChild(el('h2', 'piece', e.title));
+  if (!e.text){                                   /* a voice message with no typed text: just the voice block */
+    if (e.voice) sec.appendChild(buildVoice(e.voice, e.who + ' voice'));
+    return sec;
+  }
+  const poem = el('div', 'poem'); sec.appendChild(poem);
+  const spans = []; let wi = 0;
+  e.text.replace(/\r/g, '').split(/\n\s*\n/).forEach(block => {
+    const st = el('div', 'stanza');
+    block.split('\n').forEach(line => {
+      const l = el('span', 'line');
+      if (e.speakers){ const m = line.match(LABEL); if (m){ l.appendChild(el('span', 'spk', m[0].trim() + ' ')); line = line.slice(m[0].length); } }
+      line.split(WORD).forEach(part => {
+        if (!part) return;
+        if (WORD.test(part) && /^[A-Za-zÀ-ɏ]/.test(part)){ const w = el('span', 'w', part); spans[wi++] = w; l.appendChild(w); }
+        else l.appendChild(document.createTextNode(part));
+      });
+      st.appendChild(l);
+    });
+    poem.appendChild(st);
+  });
+
+  const p = el('div', 'player');
+  p.innerHTML = '<button class="play-btn" disabled aria-label="Play organ translation">' + PLAY + '</button><div class="info"><span>organ translation</span><span class="time">–:––</span><span class="status">loading…</span></div>';
+  sec.appendChild(p);
+  const btn = $('.play-btn', p), tm = $('.time', p), status = $('.status', p);
+
+  fetch(e.base + '.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(data => {
+    const words = data.words;
+    if (words.length !== wi) console.warn('the text has ' + wi + ' words but ' + e.base + '.json has ' + words.length + ': make sure the text is exactly the file you gave text_organ.py (and use speakers:true only if you used --speakers)');
+    const notes = []; words.forEach(w => w.notes.forEach(n => notes.push(n)));
+    let total = data.seconds + 8;
+    let a;
+    
+    a = new Audio(); a.preload = 'metadata'; a.src = e.base + '.mp3';
+
+    /* the strip: every note of the reading, drawn where it falls in time */
+    const lo = Math.min(...notes.map(n => n[1])) - 2, hi = Math.max(...notes.map(n => n[1])) + 2;
+    const W = 1000, H = 130, y = m => H - 10 - (m - lo) / (hi - lo) * (H - 20);
+    const wrap = el('div', 'scrub-wrap', '<svg class="scrub" viewBox="0 0 ' + W + ' ' + H + '" role="slider" tabindex="0" aria-label="Position in the translation" aria-valuemin="0" aria-valuenow="0"></svg>'
+      + '<div class="legend"><span><i></i>organ, from the vowels</span><span><i class="g"></i>glockenspiel, from hard letters</span></div>');
+    sec.appendChild(wrap);
+    const strip = $('.scrub', wrap); let head;
+    function draw(){
+      const x = t => t / total * W; let svg = '';
+      for (let i = 0; i < 5; i++){ const gy = 10 + i * (H - 20) / 4; svg += '<line class="grid" x1="0" x2="' + W + '" y1="' + gy + '" y2="' + gy + '"/>'; }
+      notes.forEach(n => { svg += n[2] === 2 ? '<circle class="glk" cx="' + x(n[0]) + '" cy="' + y(n[1]) + '" r="6"/>'
+        : '<rect class="org" x="' + x(n[0]) + '" y="' + (y(n[1]) - 4) + '" width="' + Math.max(6, x(n[3])) + '" height="8"/>'; });
+      strip.innerHTML = svg + '<line class="head" x1="0" x2="0" y1="0" y2="' + H + '"/>';
+      head = $('.head', strip); strip.setAttribute('aria-valuemax', Math.round(total));
+    }
+    draw();
+
+    let raf = 0;
+    const paint = () => {
+      const t = a.currentTime, x = t / total * W;
+      head.setAttribute('x1', x); head.setAttribute('x2', x);
+      tm.textContent = fmt(t) + ' / ' + fmt(total); strip.setAttribute('aria-valuenow', Math.round(t));
+      let cur = -1;
+      words.forEach((w, i) => { if (t >= w.start - 0.02 && t < w.end + 0.2) cur = i; });
+      words.forEach((w, i) => { const s = spans[i]; if (!s) return; s.classList.toggle('now', i === cur && !a.paused); s.classList.toggle('done', t >= w.end + 0.2); });
+    };
+    const loop = () => { if (a.tick) a.tick(); paint(); if (!a.paused) raf = requestAnimationFrame(loop); };
+    const setUI = () => {
+      btn.innerHTML = a.paused ? PLAY : PAUSE;
+      btn.setAttribute('aria-label', a.paused ? 'Play organ translation' : 'Pause');
+      status.textContent = a.paused ? (a.currentTime > 0.1 ? 'paused' : 'press play to listen') : 'the organ is reading';
+      poem.classList.toggle('playing', !a.paused || a.currentTime > 0.1);
+    };
+    a.addEventListener('play', () => { setUI(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); });
+    a.addEventListener('pause', () => { setUI(); paint(); });
+    a.addEventListener('ended', () => { a.currentTime = 0; poem.classList.remove('playing'); spans.forEach(s => s && s.classList.remove('now', 'done')); paint(); setUI(); });
+    a.addEventListener('loadedmetadata', () => { if (isFinite(a.duration) && Math.abs(a.duration - total) > .5){ total = a.duration; draw(); } btn.disabled = false; paint(); });
+    a.addEventListener('error', () => { status.textContent = 'could not load ' + e.base + '.mp3'; });
+    btn.disabled = false; setUI(); paint();
+    STOPPERS.set(e.base + ' text', () => a.pause());
+    btn.addEventListener('click', () => { if (a.paused){ claim(e.base + ' text'); a.play(); } else a.pause(); });
+    strip.addEventListener('click', ev => { const r = strip.getBoundingClientRect(); a.currentTime = Math.max(0, Math.min(.98, (ev.clientX - r.left) / r.width)) * total; claim(e.base + ' text'); if (a.paused) a.play(); else paint(); });
+    strip.addEventListener('keydown', ev => { if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft'){ ev.preventDefault(); a.currentTime = Math.max(0, Math.min(total - 1, a.currentTime + (ev.key === 'ArrowRight' ? 3 : -3))); paint(); } });
+
+    if (e.voice) sec.appendChild(buildVoice(e.voice, e.base + ' voice'));
+    tm.textContent = '0:00 / ' + fmt(total); status.textContent = 'press play to listen';
+  }).catch(() => { status.textContent = 'add ' + e.base + '.json and ' + e.base + '.mp3 next to this page'; });
+  return sec;
+}
+ENTRIES.forEach(e => $('#entries').appendChild(buildEntry(e)));
+</script>
+
+</body>
+</html>

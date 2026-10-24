@@ -67,8 +67,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background-size:cover;
 .vrow .info{gap:2px}
 .vrow.missing .play-btn{background:#cfcfcf;cursor:default}
 .vrow.missing .info{color:var(--soft)}
-.both{margin-top:6px;display:flex;align-items:center;gap:14px;font-size:13px}
-.both-btn{background:var(--green);color:#fff;border:none;padding:0 16px;height:36px;font:500 13px 'Josefin Sans','Futura',sans-serif;cursor:pointer}
+.both{margin-top:6px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;font-size:13px}
+.both-btn{background:var(--green);color:#fff;border:none;padding:9px 16px;min-height:36px;line-height:1.2;white-space:nowrap;font:500 13px/1.2 'Josefin Sans','Futura',sans-serif;cursor:pointer}
 .both-btn:hover{background:var(--green-dark)}
 .both-btn:disabled{background:#cfcfcf;cursor:default}
 .both-btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
@@ -132,22 +132,25 @@ summary{cursor:pointer;font-size:13px;padding:4px 0}
 <script>
 /* ---- the photo behind the page: this page has its own photos, separate from the other pages ----
    Name them voices-1.jpg, voices-2.jpg, voices-3.jpg ... and put them next to this page.
-   The page counts them by itself and stops at the first number that is missing. */
+   The page finds out how many there are (tiny requests, no downloads), then shows one at random. */
 const images = [];
 let imageIndex = 0;
 function setBackground(i){ if (images.length) document.documentElement.style.setProperty('--bg', 'url(' + images[i] + ')'); }
 function nextImage(){ if (images.length){ imageIndex = (imageIndex + 1) % images.length; setBackground(imageIndex); } }
 function prevImage(){ if (images.length){ imageIndex = (imageIndex - 1 + images.length) % images.length; setBackground(imageIndex); } }
-(function findPhotos(n){
-  const im = new Image();
-  im.onload = () => {
-    images.push('voices-' + n + '.jpg');
-    if (images.length === 1){ imageIndex = 0; setBackground(0); }
-    findPhotos(n + 1);
-  };
-  im.onerror = () => { if (images.length > 1){ imageIndex = Math.floor(Math.random() * images.length); setBackground(imageIndex); } };
-  im.src = 'voices-' + n + '.jpg';
-})(1);
+const photoExists = n => fetch('voices-' + n + '.jpg', { method: 'HEAD' }).then(r => r.ok).catch(() => new Promise(res => {
+  const im = new Image(); im.onload = () => res(true); im.onerror = () => res(false); im.src = 'voices-' + n + '.jpg'; }));
+(async function findPhotos(){
+  let n = 0;
+  for (;;){
+    const batch = await Promise.all(Array.from({ length: 20 }, (_, k) => photoExists(n + k + 1)));
+    const miss = batch.indexOf(false);
+    if (miss >= 0){ n += miss; break; }
+    n += 20;
+  }
+  for (let k = 1; k <= n; k++) images.push('voices-' + k + '.jpg');
+  if (images.length){ imageIndex = Math.floor(Math.random() * images.length); setBackground(imageIndex); }
+})();
 
 /* ---- THE PIECES ----
    Add one block per piece, newest first or last, as you like.
@@ -319,3 +322,4 @@ ENTRIES.forEach(e => $('#entries').appendChild(buildEntry(e)));
 
 </body>
 </html>
+

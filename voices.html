@@ -178,7 +178,16 @@ WOMAN: Good. Then I'm glad I was here.` },
 
   /* a voice message with no typed text: the recording, the organ's reading of it, and play both together */
   { who: 'Voice message 1',
-    voice: { original: 'voicemail1.mp3', organ: 'voicemail1-organ.mp3' } }
+    voice: { original: 'voicemail1.mp3', organ: 'voicemail1-organ.mp3' } },
+
+  { who: 'Rosewood Manor Apartments',
+    voice: { original: 'rosewood.mp3', organ: 'rosewood-organ.mp3' } },
+
+  { who: 'Acme Bread Company',
+    voice: { original: 'acme.mp3', organ: 'acme-organ.mp3' } },
+
+  { who: 'Arch St 2',
+    voice: { original: 'arch2.mp3', organ: 'arch2-organ.mp3' } }
 ];
 
 const STOPPERS = new Map();
@@ -322,4 +331,3 @@ ENTRIES.forEach(e => $('#entries').appendChild(buildEntry(e)));
 
 </body>
 </html>
-

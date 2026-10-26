@@ -90,8 +90,11 @@ summary{cursor:pointer;font-size:13px;padding:4px 0}
 /* wide screens: the pieces sit in columns, short cards stacking under each other. Phones and narrow windows keep one column. */
 @media(min-width:760px){
   .inner{max-width:1140px}
-  #entries{column-width:340px;column-gap:24px}
-  #entries .entry{break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;margin-bottom:24px}
+  
+  #entries.multi{display:flex;gap:24px;align-items:flex-start}
+  #entries .mcol{flex:1 1 0;min-width:0}
+  #entries .cell{padding-bottom:24px}
+  #entries .entry{margin-bottom:0}
 }
 @media(max-width:480px){
   .corner-btn{position:static;width:60px;margin-bottom:20px;display:block}
@@ -343,7 +346,23 @@ function buildEntry(e){
   }).catch(() => { status.textContent = 'add ' + e.base + '.json and ' + e.base + '.mp3 next to this page'; });
   return sec;
 }
-ENTRIES.forEach(e => $('#entries').appendChild(buildEntry(e)));
+const CELLS = ENTRIES.map(e => { const cell = document.createElement('div'); cell.className = 'cell'; cell.appendChild(buildEntry(e)); return cell; });
+let COLS_NOW = 0;
+function layoutCols(force){
+  const holder = $('#entries');
+  const w = holder.parentNode.clientWidth;
+  const n = window.innerWidth >= 760 ? Math.max(1, Math.floor((w + 24) / (340 + 24))) : 1;
+  if (n === COLS_NOW && !force) return;
+  COLS_NOW = n;
+  holder.classList.toggle('multi', n > 1);
+  if (n === 1){ holder.replaceChildren(...CELLS); return; }
+  const cols = Array.from({length: n}, () => { const d = document.createElement('div'); d.className = 'mcol'; return d; });
+  holder.replaceChildren(...cols);
+  CELLS.forEach(c => { let best = cols[0]; cols.forEach(k => { if (k.offsetHeight < best.offsetHeight) best = k; }); best.appendChild(c); });
+}
+layoutCols(true);
+window.addEventListener('resize', () => layoutCols());
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layoutCols(true));
 </script>
 
 </body>

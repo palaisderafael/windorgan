@@ -202,6 +202,23 @@ const LABEL = /^\s*([A-Z][A-Z0-9 .]{0,20}):\s*/;
 
 
 /* ---- the voice message: the recording, the organ's reading of it, and a button that plays both at once ---- */
+/* organ level when played together with the voice (the organ alone is always full volume) */
+const ORGAN_WITH_VOICE = 0.4;
+let MIXCTX = null;
+function setMix(a, g){
+  try {
+    if (!a._gain){
+      const C = window.AudioContext || window.webkitAudioContext;
+      if (!C){ a.volume = g; return; }
+      MIXCTX = MIXCTX || new C();
+      a._gain = MIXCTX.createGain();
+      MIXCTX.createMediaElementSource(a).connect(a._gain); a._gain.connect(MIXCTX.destination);
+    }
+    a._gain.gain.value = g;
+    if (MIXCTX.state === 'suspended') MIXCTX.resume();
+  } catch(e){ try { a.volume = g; } catch(_){} }
+}
+
 function buildVoice(v, id){
   const box = el('div', 'voicebox');
   box.appendChild(el('div', 'vtitle', 'the voice message'));
@@ -218,7 +235,7 @@ function buildVoice(v, id){
     a.addEventListener('pause', () => { b.innerHTML = PLAY; });
     a.addEventListener('ended', () => { a.currentTime = 0; upd(); });
     a.addEventListener('error', () => { r.classList.add('missing'); b.disabled = true; t.textContent = 'add ' + src + ' to play'; sync(); });
-    b.addEventListener('click', () => { if (!o.ok) return; if (a.paused){ claim(id); a.play(); } else a.pause(); });
+    b.addEventListener('click', () => { if (!o.ok) return; if (a.paused){ claim(id); if (a._gain) setMix(a, 1); a.play(); } else a.pause(); });
     box.appendChild(r); rows.push(o); return o;
   }
   const orig = row('original recording', v.original), org = row('organ reading of the voice', v.organ);
@@ -228,7 +245,7 @@ function buildVoice(v, id){
   sync();
   bb.addEventListener('click', () => {
     if (!orig.a.paused || !org.a.paused){ orig.a.pause(); org.a.pause(); return; }
-    claim(id); orig.a.currentTime = 0; org.a.currentTime = 0;
+    claim(id); orig.a.currentTime = 0; org.a.currentTime = 0; setMix(org.a, ORGAN_WITH_VOICE);
     Promise.all([orig.a.play(), org.a.play()]).then(() => { bb.textContent = 'pause both'; }).catch(() => {});
   });
   [orig.a, org.a].forEach(a => a.addEventListener('pause', () => { if (orig.a.paused && org.a.paused) bb.textContent = 'play both together'; }));

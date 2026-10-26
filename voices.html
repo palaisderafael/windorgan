@@ -91,7 +91,7 @@ summary{cursor:pointer;font-size:13px;padding:4px 0}
 @media(min-width:760px){
   .inner{max-width:1140px}
   #entries{column-width:340px;column-gap:24px}
-  #entries .entry{break-inside:avoid;margin-bottom:24px}
+  #entries .entry{break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;display:inline-block;width:100%;box-sizing:border-box;vertical-align:top;margin:0 0 24px}
 }
 @media(max-width:480px){
   .corner-btn{position:static;width:60px;margin-bottom:20px;display:block}

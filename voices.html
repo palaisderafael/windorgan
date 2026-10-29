@@ -165,6 +165,8 @@ const photoExists = n => fetch('voices-' + n + '.jpg', { method: 'HEAD' }).then(
              voice: { original: 'friend1-voice.mp3', organ: 'friend1-voice-organ.mp3' }
    text      the exact text you gave text_organ.py. Leave out base and text for a voice message with no typed text. */
 const ENTRIES = [
+  { who: 'Bug Bus Piano - blee99',
+    voice: { original: 'bugbus.mp3', organ: 'bugbus-organ.mp3', mix: 0.9 } },
   { base: 'poem1', who: 'Scene 1', speakers: false ,
     text: String.raw`1. BUS STOP
 
@@ -190,7 +192,8 @@ WOMAN: Good. Then I'm glad I was here.` },
     voice: { original: 'acme.mp3', organ: 'acme-organ.mp3' } },
 
   { who: 'Arch St 2',
-    voice: { original: 'arch2.mp3', organ: 'arch2-organ.mp3' } }
+    voice: { original: 'arch2.mp3', organ: 'arch2-organ.mp3' } },
+
 ];
 
 const STOPPERS = new Map();
@@ -248,7 +251,7 @@ function buildVoice(v, id){
   sync();
   bb.addEventListener('click', () => {
     if (!orig.a.paused || !org.a.paused){ orig.a.pause(); org.a.pause(); return; }
-    claim(id); orig.a.currentTime = 0; org.a.currentTime = 0; setMix(org.a, ORGAN_WITH_VOICE);
+    claim(id); orig.a.currentTime = 0; org.a.currentTime = 0; setMix(org.a, (typeof v.mix === 'number') ? v.mix : ORGAN_WITH_VOICE);
     Promise.all([orig.a.play(), org.a.play()]).then(() => { bb.textContent = 'pause both'; }).catch(() => {});
   });
   [orig.a, org.a].forEach(a => a.addEventListener('pause', () => { if (orig.a.paused && org.a.paused) bb.textContent = 'play both together'; }));

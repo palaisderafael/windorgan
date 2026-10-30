@@ -164,6 +164,22 @@
       border-left: 8px solid #ffffff;
     }
 
+    .more {
+      margin-top: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+      text-shadow: 0 1px 4px rgba(255,255,255,0.9);
+    }
+
+    .more a {
+      color: #000000;
+      text-decoration: none;
+      border-bottom: 1px solid #000000;
+    }
+
+    .more a:hover { border-bottom-color: transparent; }
+    .more a:focus-visible { outline: 2px solid #000000; outline-offset: 3px; }
+
     @media (max-width: 480px) {
       .page { padding: 40px 24px; }
       .title { font-size: 15px; }
@@ -176,6 +192,7 @@
       .title { order: 1; }
       .player { order: 2; }
       .bottom-row { order: 3; }
+      .more { order: 4; }
 
       a.corner-btn:not(.mobile-corner-btn) {
         display: none;
@@ -233,6 +250,8 @@
           <img src="uk-button-copy.png" alt="listen to London">
         </a>
       </div>
+
+      <div class="more"><a href="voices.html">Voices</a><!-- when the Drawings page is up, add:  &nbsp;·&nbsp; <a href="drawings.html">Drawings</a> --></div>
     </div>
   </div>
 
@@ -293,4 +312,3 @@
   </script>
 </body>
 </html>
-

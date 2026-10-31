@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wind Organ Drawings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Same look as the Voices page: Josefin Sans, 1px black frames, square green buttons, a photo behind frosted panels. */
+:root{ color-scheme:light; --ink:#000; --green:#4CBB17; --green-dark:#3da012; --panel:rgba(255,255,255,.72); --soft:#7a7a7a; --line:#000; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Josefin Sans','Futura','Century Gothic',sans-serif;
+  color:var(--ink); background-color:#fff; min-height:100vh;
+  padding-left:max(24px,env(safe-area-inset-left,0px)); padding-right:max(24px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center;background-repeat:no-repeat;background-image:var(--bg,none)}
+.page{display:flex;flex-direction:column;align-items:center;padding-block:60px 80px}
+.inner{width:100%;max-width:760px}
+.title{font-size:16px;font-weight:normal;line-height:1.6;margin-bottom:32px;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+.title a{color:inherit;text-decoration:none;border-bottom:1px solid transparent}
+.title a:hover{border-color:currentColor}
+.lede{font-size:15px;line-height:1.6;margin:-12px 0 32px;max-width:46ch;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+.entry{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:24px;margin-bottom:24px}
+.piece{font-size:16px;font-weight:500}
+.about{font-size:13px;color:var(--soft);margin:4px 0 18px;line-height:1.5}
+/* the drawing keeps its own shape (a plate with round corners stays a plate); the playhead is drawn over it */
+.stage{position:relative;line-height:0;width:fit-content;max-width:100%;margin:0 auto}
+.stage img{display:block;max-width:100%;max-height:78vh;width:auto;height:auto}
+.over{position:absolute;inset:0;pointer-events:none;-webkit-mask-size:100% 100%;mask-size:100% 100%}
+.tint{position:absolute;background:rgba(76,187,23,.16);pointer-events:none}
+.scan{position:absolute;background:var(--green);box-shadow:0 0 12px 2px rgba(76,187,23,.8);pointer-events:none}
+.player{border:1px solid var(--line);padding:14px 18px;display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.6);margin-top:20px;flex-wrap:wrap}
+.play-btn{width:40px;height:40px;min-width:40px;background:var(--green);border:none;border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.play-btn:hover{background:var(--green-dark)}
+.play-btn:focus-visible,.seek:focus-visible,.dir:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.triangle{width:0;height:0;border-style:solid;border-width:7px 0 7px 13px;border-color:transparent transparent transparent #fff;margin-left:3px}
+.pause{display:flex;gap:3px}.pause-bar{width:4px;height:14px;background:#fff}
+.time{font-size:13px;font-variant-numeric:tabular-nums;min-width:5.5em}
+.seek{flex:1;min-width:120px;accent-color:var(--green);height:24px}
+.dirs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.dir{font:500 13px/1.2 'Josefin Sans','Futura',sans-serif;padding:9px 14px;min-height:36px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.dir[aria-pressed=true]{background:var(--green);color:#fff;border-color:var(--green)}
+.hint{font-size:12px;color:var(--soft);margin-top:10px;line-height:1.5}
+.bottom-row{margin:4px 0 28px;display:flex;justify-content:space-between;align-items:center}
+.image-nav{display:flex;gap:8px}
+.image-nav-btn{width:32px;height:32px;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.image-nav-btn:hover{background:var(--green-dark)}
+.image-nav-btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.vhs-arrow-pair{display:flex;align-items:center;gap:3px}
+.vhs-arrow{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent}
+.vhs-arrow.back{border-right:8px solid #fff}.vhs-arrow.forward{border-left:8px solid #fff}
+details{margin:36px 0 0;font-size:15px;line-height:1.6;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+summary{cursor:pointer;font-size:13px;padding:4px 0}
+.rules{list-style:none;margin-top:12px;display:grid;gap:8px}
+.rules li{display:grid;grid-template-columns:110px 1fr;gap:12px}
+.rules b{font-weight:500;font-size:13px;line-height:1.9}
+@media(max-width:480px){.entry{padding:16px}.rules li{grid-template-columns:1fr;gap:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page"><div class="inner">
+  <div class="title">Wind Organ<br>Drawings &nbsp;·&nbsp; <a href="voices.html">Voices</a> &nbsp;·&nbsp; <a href="index.html">Oakland / NYC</a></div>
+  <p class="lede">A line sweeps across each drawing. The organ plays every stroke it crosses, at the height where it crosses.</p>
+
+  <div class="bottom-row">
+    <div class="image-nav">
+      <button class="image-nav-btn" onclick="prevImage()" aria-label="previous image"><div class="vhs-arrow-pair"><div class="vhs-arrow back"></div><div class="vhs-arrow back"></div></div></button>
+      <button class="image-nav-btn" onclick="nextImage()" aria-label="next image"><div class="vhs-arrow-pair"><div class="vhs-arrow forward"></div><div class="vhs-arrow forward"></div></div></button>
+    </div>
+  </div>
+
+  <main id="entries"></main>
+
+  <details>
+    <summary>how the organ reads a drawing</summary>
+    <ul class="rules">
+      <li><b>the line</b><span>It crosses the drawing from left to right, or from top to bottom, in about a minute.</span></li>
+      <li><b>a stroke</b><span>Each stroke under the line plays one note, at the height where the line meets it. High on the page is high in pitch (left to right), or left to right is low to high (top to bottom). All notes stay inside G major.</span></li>
+      <li><b>zigzags</b><span>A wiggling line flutters up and down with its own shape. A straight line holds a single note.</span></li>
+      <li><b>thick or thin</b><span>Heavy, dark strokes sound on the organ. Thin lines strike the glockenspiel.</span></li>
+      <li><b>scribbles</b><span>Dense areas play a shimmering cluster. Blank paper is silence.</span></li>
+    </ul>
+  </details>
+</div></div>
+
+<script>
+/* ---- the photo behind the page: it shares the photos of the Voices page (voices-1.jpg, voices-2.jpg ...) ---- */
+const images = [];
+let imageIndex = 0;
+function setBackground(i){ if (images.length) document.documentElement.style.setProperty('--bg', 'url(' + images[i] + ')'); }
+function nextImage(){ if (images.length){ imageIndex = (imageIndex + 1) % images.length; setBackground(imageIndex); } }
+function prevImage(){ if (images.length){ imageIndex = (imageIndex - 1 + images.length) % images.length; setBackground(imageIndex); } }
+const photoExists = n => fetch('voices-' + n + '.jpg', { method: 'HEAD' }).then(r => r.ok).catch(() => new Promise(res => {
+  const im = new Image(); im.onload = () => res(true); im.onerror = () => res(false); im.src = 'voices-' + n + '.jpg'; }));
+(async function findPhotos(){
+  let n = 0;
+  for (;;){
+    const batch = await Promise.all(Array.from({ length: 20 }, (_, k) => photoExists(n + k + 1)));
+    const miss = batch.indexOf(false);
+    if (miss >= 0){ n += miss; break; }
+    n += 20;
+  }
+  for (let k = 1; k <= n; k++) images.push('voices-' + k + '.jpg');
+  if (images.length){ imageIndex = Math.floor(Math.random() * images.length); setBackground(imageIndex); }
+})();
+
+/* ---- THE DRAWINGS ----
+   make_drawing.py adds one block per drawing between the two marker lines below. You can also edit by hand.
+   title    the heading
+   about    a small line under it (what it is drawn on, where it was found ...)
+   image    the picture file, next to this page
+   area     optional: the part of the picture the line travels over, as [left, top, right, bottom] fractions
+   seconds  how long the line takes to cross
+   sweeps   left: the line goes left to right.  top: it goes top to bottom.  Each has the mp3 and where the line starts and ends
+            (as a fraction of the picture's width for left, of its height for top). */
+const ENTRIES = [
+/*ENTRIES-START*/
+  { title: 'Kindness Helps', about: 'found drawing, sharpie on a bio-plate', image: 'kindness.webp', seconds: 60,
+    sweeps: {
+      left: { audio: 'kindness-left.mp3', range: [0.0542, 0.9883] },
+      top: { audio: 'kindness-top.mp3', range: [0.0477, 0.8827] }
+    } },
+  { title: 'Mural', about: 'painting on a wall', image: 'mural.jpg', seconds: 60, area: [0.4600, 0.0742, 0.9890, 0.7200],
+    sweeps: {
+      left: { audio: 'mural-left.mp3', range: [0.4600, 0.9890] },
+      top: { audio: 'mural-top.mp3', range: [0.0742, 0.7200] }
+    } },
+  { title: 'Lydia Fong', about: 'Sharpie on pink paper', image: 'img6846c.jpg', seconds: 60, area: [0.1016, 0.0725, 0.9500, 0.9642],
+    sweeps: {
+      left: { audio: 'img6846c-left.mp3', range: [0.1016, 0.9500] },
+      top: { audio: 'img6846c-top.mp3', range: [0.0725, 0.9642] }
+    } },
+  { title: 'Unknown Artists', about: 'marker on a street sign', image: 'sign2.webp', seconds: 60, area: [0.1324, 0.0758, 0.9320, 0.6600],
+    sweeps: {
+      left: { audio: 'sign2-left.mp3', range: [0.1324, 0.9320] },
+      top: { audio: 'sign2-top.mp3', range: [0.0758, 0.6600] }
+    } },
+  { title: 'Super Star', about: 'Artist unknown 2009', image: 'superstar.webp', seconds: 60, area: [0.0650, 0.0250, 0.9685, 0.7650],
+    sweeps: {
+      left: { audio: 'superstar-left.mp3', range: [0.0650, 0.9685] },
+      top: { audio: 'superstar-top.mp3', range: [0.0250, 0.7650] }
+    } },
+/*ENTRIES-END*/
+];
+
+const STOPPERS = new Map();
+function claim(id){ STOPPERS.forEach((fn, k) => { if (k !== id) fn(); }); }
+const $ = (s, r=document) => r.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const PLAY = '<div class="triangle"></div>';
+const PAUSE = '<div class="pause"><div class="pause-bar"></div><div class="pause-bar"></div></div>';
+const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); };
+
+function buildDrawing(e, id){
+  const box = el('section', 'entry');
+  box.appendChild(el('div', 'piece')).textContent = e.title;
+  if (e.about) box.appendChild(el('div', 'about')).textContent = e.about;
+  const stage = el('div', 'stage');
+  const img = el('img'); img.src = e.image; img.alt = e.title; img.draggable = false;
+  const tint = el('div', 'tint'), scan = el('div', 'scan');
+  const over = el('div', 'over'); if (/^https?:$/.test(location.protocol)) over.style.webkitMaskImage = over.style.maskImage = 'url("' + e.image + '")';   // on the website the playhead stays inside the picture's own shape; a page opened straight from a file cannot load the mask, so it goes without
+  over.append(tint, scan);
+  stage.append(img, over); box.appendChild(stage);
+
+  const player = el('div', 'player');
+  const btn = el('button', 'play-btn', PLAY); btn.setAttribute('aria-label', 'play');
+  const time = el('span', 'time', '0:00');
+  const seek = el('input', 'seek'); seek.type = 'range'; seek.min = 0; seek.max = 1000; seek.value = 0; seek.setAttribute('aria-label', 'position');
+  player.append(btn, time, seek); box.appendChild(player);
+
+  const modes = Object.keys(e.sweeps);
+  const sweepSeconds = e.seconds || 60;
+  let mode = modes[0], audio = null, raf = 0;
+  const auds = {};
+  modes.forEach(m => { const a = new Audio(); a.preload = 'none'; a.src = e.sweeps[m].audio; auds[m] = a; });
+  const dirs = el('div', 'dirs');
+  const labels = { left: 'left to right', top: 'top to bottom' };
+  const buttons = {};
+  if (modes.length > 1){
+    modes.forEach(m => {
+      const b = el('button', 'dir'); b.textContent = labels[m]; b.type = 'button';
+      b.onclick = () => setMode(m, true);
+      buttons[m] = b; dirs.appendChild(b);
+    });
+    box.appendChild(dirs);
+  }
+  const hint = el('div', 'hint'); box.appendChild(hint);
+
+  const A = e.area || [0, 0, 1, 1];                  // the part of the picture the line travels over: left, top, right, bottom
+  function draw(){
+    const a = auds[mode], f = Math.min(1, a.currentTime / sweepSeconds), r = e.sweeps[mode].range, p = r[0] + (r[1] - r[0]) * f;
+    const pc = v => (v * 100) + '%';
+    if (mode === 'left'){
+      scan.style.cssText = 'left:' + pc(p) + ';top:' + pc(A[1]) + ';width:2px;height:' + pc(A[3] - A[1]);
+      tint.style.cssText = 'left:' + pc(r[0]) + ';top:' + pc(A[1]) + ';height:' + pc(A[3] - A[1]) + ';width:' + pc(p - r[0]);
+    } else {
+      scan.style.cssText = 'top:' + pc(p) + ';left:' + pc(A[0]) + ';height:2px;width:' + pc(A[2] - A[0]);
+      tint.style.cssText = 'left:' + pc(A[0]) + ';top:' + pc(r[0]) + ';width:' + pc(A[2] - A[0]) + ';height:' + pc(p - r[0]);
+    }
+    seek.value = f * 1000;
+    time.textContent = fmt(a.currentTime) + ' / ' + fmt(sweepSeconds);
+  }
+  function loop(){ draw(); if (!auds[mode].paused) raf = requestAnimationFrame(loop); }
+  function stop(){ auds[mode].pause(); btn.innerHTML = PLAY; btn.setAttribute('aria-label', 'play'); cancelAnimationFrame(raf); draw(); }
+  function setMode(m, userClick){
+    const was = !auds[mode].paused;
+    stop(); auds[mode].currentTime = 0; mode = m;
+    modes.forEach(k => buttons[k] && buttons[k].setAttribute('aria-pressed', k === m));
+    hint.textContent = m === 'left' ? 'High on the page is high in pitch.' : 'Left is low in pitch, right is high.';
+    draw();
+    if (userClick && was) toggle();
+  }
+  function toggle(){
+    const a = auds[mode];
+    if (a.paused){
+      claim(id); a.play().catch(() => {}); btn.innerHTML = PAUSE; btn.setAttribute('aria-label', 'pause'); cancelAnimationFrame(raf); loop();
+    } else stop();
+  }
+  btn.onclick = toggle;
+  seek.oninput = () => { auds[mode].currentTime = (seek.value / 1000) * sweepSeconds; draw(); };
+  modes.forEach(m => auds[m].addEventListener('ended', () => { if (m === mode) stop(); }));
+  STOPPERS.set(id, () => { if (!auds[mode].paused) stop(); });
+  setMode(mode, false);
+  return box;
+}
+ENTRIES.forEach((e, i) => $('#entries').appendChild(buildDrawing(e, 'd' + i)));
+</script>
+</body>
+</html>

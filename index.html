@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wind Organ — Oakland / NYC</title>
+  <title>Wind Organ — Oakland / 99 Bowery, NY</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -180,6 +180,25 @@
     .more a:hover { border-bottom-color: transparent; }
     .more a:focus-visible { outline: 2px solid #000000; outline-offset: 3px; }
 
+    .corner-btn { text-decoration: none; color: #000000; }
+
+    .corner-label {
+      display: block;
+      margin: 6px -24px 0;
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: center;
+      white-space: nowrap;
+      color: #000000;
+      text-shadow: 0 1px 4px rgba(255,255,255,0.9);
+      opacity: 0.7;
+      transition: opacity 0.25s ease;
+    }
+
+    .corner-btn:hover .corner-label,
+    .corner-btn:active .corner-label,
+    .corner-btn:focus .corner-label { opacity: 1; }
+
     @media (max-width: 480px) {
       .page { padding: 40px 24px; }
       .title { font-size: 15px; }
@@ -192,7 +211,8 @@
       .title { order: 1; }
       .player { order: 2; }
       .bottom-row { order: 3; }
-      .more { order: 4; }
+      .mobile-corner-btn { order: 4; }
+      .more { order: 5; }
 
       a.corner-btn:not(.mobile-corner-btn) {
         display: none;
@@ -203,7 +223,10 @@
         position: static;
         width: 60px;
         flex-shrink: 0;
+        margin-top: 24px;
       }
+
+      .mobile-corner-btn .corner-label { margin: 6px 0 0; text-align: left; }
     }
   </style>
 </head>
@@ -212,9 +235,10 @@
     <div class="inner">
       <a href="london.html" class="corner-btn">
         <img src="uk-button-copy.png" alt="listen to London">
+        <span class="corner-label">Wind Organ London</span>
       </a>
 
-      <div class="title">Wind Organ<br>Oakland / NYC</div>
+      <div class="title">Wind Organ<br>Oakland, CA / 99 Bowery, NY</div>
 
       <div class="player">
         <button class="play-btn" onclick="toggle()" aria-label="Play stream">
@@ -246,12 +270,14 @@
             </div>
           </button>
         </div>
-        <a href="london.html" class="corner-btn mobile-corner-btn">
-          <img src="uk-button-copy.png" alt="listen to London">
-        </a>
       </div>
 
-        <div class="more"><a href="voices.html">Voices</a> &nbsp;·&nbsp; <a href="drawings.html">Drawings</a></div>
+      <a href="london.html" class="corner-btn mobile-corner-btn">
+        <img src="uk-button-copy.png" alt="listen to London">
+        <span class="corner-label">Wind Organ London</span>
+      </a>
+
+      <div class="more"><a href="voices.html">Voices</a> &nbsp;·&nbsp; <a href="drawings.html">Drawings</a></div>
     </div>
   </div>
 

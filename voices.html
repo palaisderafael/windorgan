@@ -194,6 +194,11 @@ WOMAN: Good. Then I'm glad I was here.` },
   { who: 'Arch St 2',
     voice: { original: 'arch2.mp3', organ: 'arch2-organ.mp3' } },
 
+  { base: 'swallows-aki', who: 'Akiko Neumann', speakers: false,
+    text: String.raw`Swallows. Austria at dusk, I watched their flight out and back into the local church bell tower. Swoops and returns, a ballistic show, hooping and hollering. Minutia sounds only birds can pick up. Crazed angels in fading light. I walked home in an inexplicable funk.
+
+The next day at dusk, I returned to the same locale. This time to the fish pond at the base of the bell tower. Trout. Swarming and trashing. An illustration of purgatory. Lost in a rectangle, guided to the surface by blind hunger. Dinnertime dawned on me and I rushed home already late.` },
+
 ];
 
 const STOPPERS = new Map();
@@ -293,6 +298,9 @@ function buildEntry(e){
 
   fetch(e.base + '.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(data => {
     const words = data.words;
+    const partSpans = {};                       /* a word with "parts" (like Din-ner-time) lights up one part at a time */
+    words.forEach((w, i) => { if (w.parts && spans[i]){ const sp = spans[i]; sp.textContent = '';
+      partSpans[i] = w.parts.map(p => { const q = el('span', 'w', p.text); sp.appendChild(q); return q; }); } });
     if (words.length !== wi) console.warn('the text has ' + wi + ' words but ' + e.base + '.json has ' + words.length + ': make sure the text is exactly the file you gave text_organ.py (and use speakers:true only if you used --speakers)');
     const notes = []; words.forEach(w => w.notes.forEach(n => notes.push(n)));
     let total = data.seconds + 8;
@@ -324,7 +332,11 @@ function buildEntry(e){
       tm.textContent = fmt(t) + ' / ' + fmt(total); strip.setAttribute('aria-valuenow', Math.round(t));
       let cur = -1;
       words.forEach((w, i) => { if (t >= w.start - 0.02 && t < w.end + 0.2) cur = i; });
-      words.forEach((w, i) => { const s = spans[i]; if (!s) return; s.classList.toggle('now', i === cur && !a.paused); s.classList.toggle('done', t >= w.end + 0.2); });
+      words.forEach((w, i) => { const s = spans[i]; if (!s) return;
+        if (w.parts && partSpans[i]){
+          w.parts.forEach((p, j) => { const q = partSpans[i][j]; q.classList.toggle('now', t >= p.start - 0.02 && t < p.end && !a.paused); q.classList.toggle('done', t >= p.end); });
+          if (t >= w.end + 0.2) partSpans[i].forEach(q => q.classList.add('done'));
+        } else { s.classList.toggle('now', i === cur && !a.paused); s.classList.toggle('done', t >= w.end + 0.2); } });
     };
     const loop = () => { if (a.tick) a.tick(); paint(); if (!a.paused) raf = requestAnimationFrame(loop); };
     const setUI = () => {
@@ -335,7 +347,7 @@ function buildEntry(e){
     };
     a.addEventListener('play', () => { setUI(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); });
     a.addEventListener('pause', () => { setUI(); paint(); });
-    a.addEventListener('ended', () => { a.currentTime = 0; poem.classList.remove('playing'); spans.forEach(s => s && s.classList.remove('now', 'done')); paint(); setUI(); });
+    a.addEventListener('ended', () => { a.currentTime = 0; poem.classList.remove('playing'); spans.forEach(s => s && s.classList.remove('now', 'done')); Object.values(partSpans).forEach(l => l.forEach(q => q.classList.remove('now', 'done'))); paint(); setUI(); });
     a.addEventListener('loadedmetadata', () => { if (isFinite(a.duration) && Math.abs(a.duration - total) > .5){ total = a.duration; draw(); } btn.disabled = false; paint(); });
     a.addEventListener('error', () => { status.textContent = 'could not load ' + e.base + '.mp3'; });
     btn.disabled = false; setUI(); paint();

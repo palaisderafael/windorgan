@@ -85,7 +85,7 @@
       width: 40px;
       height: 40px;
       min-width: 40px;
-      background-color: #4CBB17;
+      background-color: #000000;
       border: none;
       border-radius: 0;
       cursor: pointer;
@@ -94,7 +94,7 @@
       justify-content: center;
     }
 
-    .play-btn:hover { background-color: #3da012; }
+    .play-btn:hover { background-color: #333333; }
 
     .triangle {
       width: 0;
@@ -110,7 +110,7 @@
 
     .info { display: flex; flex-direction: column; gap: 4px; }
 
-    .location, .time, .status {
+    .location, .time, .status, .weather {
       font-size: 13px;
       color: #000000;
     }
@@ -131,7 +131,7 @@
     .image-nav-btn {
       width: 32px;
       height: 32px;
-      background-color: #4CBB17;
+      background-color: #000000;
       border: none;
       cursor: pointer;
       display: flex;
@@ -140,7 +140,7 @@
     }
 
     .image-nav-btn:hover {
-      background-color: #3da012;
+      background-color: #333333;
     }
 
     .vhs-arrow-pair {
@@ -251,6 +251,7 @@
         <div class="info">
           <span class="location">99 Bowery, New York</span>
           <span class="time" id="clock"></span>
+          <span class="weather" id="weather"></span>
           <span class="status" id="status">press play to listen</span>
         </div>
       </div>
@@ -323,6 +324,28 @@
     }
     updateClock();
     setInterval(updateClock, 1000);
+
+    /* weather at 99 Bowery: free Open-Meteo service, no key. Shows nothing if it can't be reached. */
+    const WMO = {0:'clear',1:'mostly clear',2:'partly cloudy',3:'overcast',45:'fog',48:'fog',
+      51:'light drizzle',53:'drizzle',55:'heavy drizzle',56:'freezing drizzle',57:'freezing drizzle',
+      61:'light rain',63:'rain',65:'heavy rain',66:'freezing rain',67:'freezing rain',
+      71:'light snow',73:'snow',75:'heavy snow',77:'snow grains',80:'light showers',81:'showers',82:'heavy showers',
+      85:'snow showers',86:'snow showers',95:'thunderstorm',96:'thunderstorm',99:'thunderstorm'};
+    const COMPASS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    const weatherEl = document.getElementById('weather');
+    function updateWeather() {
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=40.719&longitude=-73.996'
+        + '&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code'
+        + '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York';
+      fetch(url).then(r => r.json()).then(d => {
+        const c = d.current;
+        const dir = COMPASS[Math.round(c.wind_direction_10m / 22.5) % 16];
+        const sky = WMO[c.weather_code] || '';
+        weatherEl.textContent = Math.round(c.temperature_2m) + '°F · wind ' + Math.round(c.wind_speed_10m) + ' mph ' + dir + (sky ? ' · ' + sky : '');
+      }).catch(() => { weatherEl.textContent = ''; });
+    }
+    updateWeather();
+    setInterval(updateWeather, 10 * 60 * 1000);
 
     function toggle() {
       if (!playing) {

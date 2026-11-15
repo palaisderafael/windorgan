@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wind Organ Guestbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Same look as windorgan.com: Josefin Sans, a photo behind frosted panels, thin black frames, black buttons. */
+:root{ color-scheme:light; --ink:#000; --soft:#6f6f6f; --line:#000; --panel:rgba(255,255,255,.78); --btn:#000; --btn-hover:#333; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Josefin Sans','Futura','Century Gothic',sans-serif;
+  color:var(--ink); background-color:#fff; min-height:100vh;
+  padding-left:max(24px,env(safe-area-inset-left,0px)); padding-right:max(24px,env(safe-area-inset-right,0px));
+}
+/* the photo fills the whole screen and stays put while the page scrolls */
+body::before{content:"";position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center;background-repeat:no-repeat;background-image:var(--bg,none)}
+.page{display:flex;flex-direction:column;align-items:center;padding-block:60px 80px}
+.inner{width:100%;max-width:520px;min-width:0}
+.title{font-size:16px;font-weight:normal;line-height:1.6;margin-bottom:12px;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+.title a{color:inherit;text-decoration:none;border-bottom:1px solid transparent}
+.title a:hover{border-color:currentColor}
+.lede{font-size:15px;line-height:1.6;max-width:42ch;margin-bottom:24px;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+.panel{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:22px}
+label{display:block;font-size:13px;margin-bottom:6px}
+.opt{color:var(--soft)}
+input,textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:0;padding:10px 12px}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+input:focus-visible,textarea:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.field{margin-bottom:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.count{font-size:12px;color:var(--soft);font-variant-numeric:tabular-nums}
+.btn{background:var(--btn);color:#fff;border:none;border-radius:0;padding:10px 22px;min-height:40px;font:500 14px/1.2 'Josefin Sans','Futura',sans-serif;letter-spacing:.04em;cursor:pointer}
+.btn:hover{background:var(--btn-hover)}
+.btn:disabled{background:#c9c9c9;cursor:default}
+.thanks{font-size:14px;line-height:1.6;margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,0,0,.18)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+h2{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin:36px 0 14px;text-shadow:0 1px 4px rgba(255,255,255,.9)}
+.entry{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:18px 20px;margin-bottom:14px}
+.who{font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.who .name{font-weight:500}
+.who .date{color:var(--soft)}
+.msg{font-size:16px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.w{transition:color .12s,background-color .12s}
+.msg.playing .w{color:var(--soft)}
+.msg.playing .w.done{color:var(--ink)}
+.msg.playing .w.now{color:var(--ink);background:#d9d9d9}
+.player{border-top:1px solid rgba(0,0,0,.2);margin-top:14px;padding-top:14px;display:flex;align-items:center;gap:14px}
+.play-btn{width:36px;height:36px;min-width:36px;background:var(--btn);border:none;border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.play-btn:hover{background:var(--btn-hover)}
+.play-btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.triangle{width:0;height:0;border-style:solid;border-width:7px 0 7px 13px;border-color:transparent transparent transparent #fff;margin-left:3px}
+.pause{display:flex;gap:3px}.pause-bar{width:4px;height:14px;background:#fff}
+.info{display:flex;flex-direction:column;gap:3px;font-size:13px;min-width:0}
+.time{font-variant-numeric:tabular-nums;color:var(--soft)}
+.empty{font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:14px 16px}
+.nav{display:flex;gap:8px;margin-top:28px}
+.nav-btn{width:32px;height:32px;background:var(--btn);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:var(--btn-hover)}
+.nav-btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.arrows{display:flex;align-items:center;gap:3px}
+.arrow{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent}
+.arrow.back{border-right:8px solid #fff}.arrow.fwd{border-left:8px solid #fff}
+@media(max-width:480px){.page{padding-block:40px 64px}.panel{padding:18px}}
+</style>
+</head>
+<body>
+<div class="page"><div class="inner">
+
+  <div class="title">Wind Organ<br>Guestbook &nbsp;·&nbsp; <a href="index.html">99 Bowery, NY</a></div>
+  <p class="lede">Leave a note about what you heard. Notes appear below after they've been read.</p>
+
+  <form class="panel" id="form" autocomplete="off">
+    <div class="field">
+      <label for="name">Name <span class="opt">(optional)</span></label>
+      <input id="name" maxlength="40" placeholder="Anonymous">
+    </div>
+    <div class="field">
+      <label for="msg">Message</label>
+      <textarea id="msg" maxlength="400" required></textarea>
+    </div>
+    <input class="hp" id="site" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <div class="row">
+      <span class="count" id="count">0 / 400</span>
+      <button class="btn" id="sign" type="submit" disabled>Sign</button>
+    </div>
+    <p class="thanks" id="thanks" role="status" hidden></p>
+  </form>
+
+  <h2>Notes</h2>
+  <div id="entries"></div>
+
+  <div class="nav">
+    <button class="nav-btn" onclick="prevImage()" aria-label="previous image"><div class="arrows"><div class="arrow back"></div><div class="arrow back"></div></div></button>
+    <button class="nav-btn" onclick="nextImage()" aria-label="next image"><div class="arrows"><div class="arrow fwd"></div><div class="arrow fwd"></div></div></button>
+  </div>
+
+</div></div>
+
+<script>
+/* ---- THE FORM: sends each note into your Google Form (and so into your Sheet) ----
+   If a note ever lands in the wrong column, swap the two numbers below. */
+const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSf5gNEGVuO_8yp9e8wOSQDJNBXe7cUT_7JTkiDaMPXcduqDTQ/formResponse';
+const ENTRY_NAME = 'entry.1910240932';
+const ENTRY_MESSAGE = 'entry.624102619';
+
+const $ = id => document.getElementById(id);
+const msg = $('msg'), sign = $('sign'), thanks = $('thanks');
+function sync(){ $('count').textContent = msg.value.length + ' / 400'; sign.disabled = msg.value.trim().length === 0; }
+msg.addEventListener('input', sync); sync();
+
+$('form').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const text = msg.value.trim();
+  if (!text || $('site').value) return;                 /* the hidden box is a trap for spam bots */
+  sign.disabled = true; sign.textContent = 'Sending…';
+  const body = new URLSearchParams();
+  body.set(ENTRY_NAME, $('name').value.trim());
+  body.set(ENTRY_MESSAGE, text);
+  fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body })
+    .then(() => {
+      msg.value = ''; $('name').value = ''; sync();
+      thanks.textContent = "Thank you. Your note will appear below once it's been read.";
+      thanks.hidden = false;
+    })
+    .catch(() => {
+      thanks.textContent = "Sorry, that didn't send. Please try again.";
+      thanks.hidden = false; sync();
+    })
+    .finally(() => { sign.textContent = 'Sign'; setTimeout(sync, 4000); });
+});
+
+/* ---- THE NOTES: made by guestbook_notes.py, which writes notes.json and one mp3 + json per note ---- */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WORD = /([A-Za-z\u00C0-\u024F][A-Za-z\u00C0-\u024F'\u2019]*)/;
+const PLAY = '<div class="triangle"></div>';
+const PAUSE = '<div class="pause"><div class="pause-bar"></div><div class="pause-bar"></div></div>';
+const fmt = s => { s = Math.max(0, Math.round(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const box = document.getElementById('entries');
+let current = null;                                            /* only one note plays at a time */
+
+function buildNote(n){
+  const d = document.createElement('section'); d.className = 'entry';
+  d.innerHTML = '<div class="who"><span class="name">' + esc(n.name || 'Anonymous') + '</span><span class="date">' + esc(n.date || '') + '</span></div>';
+  const msg = document.createElement('div'); msg.className = 'msg'; d.appendChild(msg);
+  const spans = [];
+  if (n.audio && n.hl){
+    n.msg.split(WORD).forEach(p => {
+      if (!p) return;
+      if (/^[A-Za-z\u00C0-\u024F]/.test(p)){ const w = document.createElement('span'); w.className = 'w'; w.textContent = p; spans.push(w); msg.appendChild(w); }
+      else msg.appendChild(document.createTextNode(p));
+    });
+  } else msg.textContent = n.msg;
+  if (!n.audio) return d;
+
+  const p = document.createElement('div'); p.className = 'player';
+  p.innerHTML = '<button class="play-btn" aria-label="Play this note on the organ">' + PLAY + '</button><div class="info"><span>the organ reads this note</span><span class="time">–:––</span></div>';
+  d.appendChild(p);
+  const btn = p.querySelector('.play-btn'), tm = p.querySelector('.time');
+  let a = null, words = [], raf = 0;
+
+  const paint = () => {
+    if (!a) return;
+    const t = a.currentTime;
+    tm.textContent = fmt(t) + ' / ' + fmt(a.duration);
+    let cur = -1;
+    words.forEach((w, i) => { if (t >= w.start - 0.02 && t < w.end + 0.2) cur = i; });
+    words.forEach((w, i) => { const s = spans[i]; if (!s) return; s.classList.toggle('now', i === cur && !a.paused); s.classList.toggle('done', t >= w.end + 0.2); });
+    msg.classList.toggle('playing', spans.length > 0 && (!a.paused || t > 0.1));
+  };
+  const loop = () => { paint(); if (a && !a.paused) raf = requestAnimationFrame(loop); };
+  const reset = () => { spans.forEach(s => s.classList.remove('now', 'done')); msg.classList.remove('playing'); };
+
+  function start(){
+    if (current && current !== a) current.pause();
+    current = a; a.play();
+  }
+  btn.addEventListener('click', () => {
+    if (a){ if (a.paused) start(); else a.pause(); return; }
+    tm.textContent = 'loading…';
+    const jsonReady = n.hl ? fetch(n.id + '.json').then(r => r.json()).then(j => { words = j.words; if (words.length !== spans.length) words = []; }) : Promise.resolve();
+    jsonReady.catch(() => { words = []; }).then(() => {
+      a = new Audio(n.id + '.mp3');
+      a.addEventListener('play', () => { btn.innerHTML = PAUSE; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); });
+      a.addEventListener('pause', () => { btn.innerHTML = PLAY; paint(); });
+      a.addEventListener('ended', () => { a.currentTime = 0; reset(); btn.innerHTML = PLAY; paint(); });
+      a.addEventListener('error', () => { tm.textContent = 'could not load the sound'; });
+      a.addEventListener('loadedmetadata', () => { tm.textContent = '0:00 / ' + fmt(a.duration); });
+      start();
+    });
+  });
+  return d;
+}
+
+fetch('notes.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(list => {
+  if (!list.length) throw new Error('empty');
+  list.forEach(n => box.appendChild(buildNote(n)));
+}).catch(() => { box.innerHTML = '<p class="empty">The first notes will appear here.</p>'; });
+
+/* the photo behind the page: the same photos as the front page */
+const images = ['flying.jpg', 'nyc.jpg', 'IMG_8740.jpg', 'IMG_8786.jpg', 'IMG_9011.jpg', 'IMG_9031.jpg', 'IMG_9950.jpg',
+  'IMG_0254.jpg', 'IMG_0261.jpg', 'IMG_0266.jpg', 'IMG_0269.jpg', 'IMG_0271.jpg', 'IMG_0273.jpg', 'IMG_0274.jpg', 'IMG_0275.jpg', 'IMG_0278.jpg', 'IMG_0282.jpg', 'IMG_0286.jpg', 'IMG_0287.jpg', 'IMG_0288.jpg', 'IMG_0289.jpg', 'IMG_0290.jpg', 'IMG_0291.jpg', 'IMG_0293.jpg', 'IMG_0294.jpg', 'IMG_0296.jpg', 'IMG_0302.jpg', 'IMG_0304.jpg', 'IMG_0305.jpg', 'IMG_0307.jpg'];
+let imageIndex = Math.floor(Math.random() * images.length);
+function setBackground(i){ document.documentElement.style.setProperty('--bg', 'url(' + images[i] + ')'); }
+function nextImage(){ imageIndex = (imageIndex + 1) % images.length; setBackground(imageIndex); }
+function prevImage(){ imageIndex = (imageIndex - 1 + images.length) % images.length; setBackground(imageIndex); }
+setBackground(imageIndex);
+</script>
+</body>
+</html>

@@ -47,7 +47,7 @@ h2{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
 .w{transition:color .12s,background-color .12s}
 .msg.playing .w{color:var(--soft)}
 .msg.playing .w.done{color:var(--ink)}
-.msg.playing .w.now{color:var(--ink);background:#d9d9d9}
+.msg.playing .w.now{color:#fff;background:#b53a2c}
 .player{border-top:1px solid rgba(0,0,0,.2);margin-top:14px;padding-top:14px;display:flex;align-items:center;gap:14px}
 .play-btn{width:36px;height:36px;min-width:36px;background:var(--btn);border:none;border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .play-btn:hover{background:var(--btn-hover)}
@@ -71,7 +71,8 @@ h2{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
 <div class="page"><div class="inner">
 
   <div class="title">Wind Organ<br>Guestbook &nbsp;·&nbsp; <a href="index.html">99 Bowery, NY</a></div>
-  
+  <p class="lede">Leave a note about what you heard. Notes appear below after they've been read.</p>
+
   <form class="panel" id="form" autocomplete="off">
     <div class="field">
       <label for="name">Name <span class="opt">(optional)</span></label>

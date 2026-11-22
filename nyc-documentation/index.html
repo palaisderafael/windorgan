@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>wind organ</title>
+<style>
+  :root{--ink:#d9d4b8}
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%;background:#000;color:var(--ink);overflow:hidden;
+    font-family:"Futura","Century Gothic","Jost","Poppins",system-ui,sans-serif;-webkit-user-select:none;user-select:none}
+  #screen{position:fixed;inset:0 0 54px 0;display:block;width:100%;height:calc(100% - 54px);background:#000;touch-action:pan-y}
+  #bar{position:fixed;left:0;right:0;bottom:0;height:54px;display:flex;align-items:center;justify-content:center;gap:16px;
+    padding:0 max(14px,env(safe-area-inset-left)) env(safe-area-inset-bottom);font-size:13px;letter-spacing:.1em;text-transform:lowercase;background:#000}
+  button,a{font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
+  button{background:#161512;border:2px solid #8f8a72;border-radius:3px;width:58px;height:34px;cursor:pointer;font-size:15px;line-height:1;
+    box-shadow:inset 0 -3px 0 rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.12)}
+  button:hover{background:#26241d}
+  button:active{box-shadow:inset 0 2px 0 rgba(0,0,0,.6);transform:translateY(1px)}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  a{text-decoration:none;border-bottom:1px solid rgba(217,212,184,.5)}
+  #count{min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+</style></head>
+<body>
+<canvas id="screen" aria-label="wind organ documentation, shown like a 16mm film"></canvas>
+<div id="bar">
+  <a href="https://windorgan.com">&larr; windorgan.com</a>
+  <button id="prev" aria-label="previous page">&#9664;&#9664;</button>
+  <span id="count">1 / 1</span>
+  <button id="next" aria-label="next page">&#9654;&#9654;</button>
+</div>
+<script>
+(function(){
+  var pages=["pages/p_001.jpg", "pages/p_002.jpg", "pages/p_003.jpg", "pages/p_004.jpg", "pages/p_005.jpg", "pages/p_006.jpg", "pages/p_007.jpg", "pages/p_008.jpg", "pages/p_009.jpg", "pages/p_010.jpg", "pages/p_011.jpg", "pages/p_012.jpg", "pages/p_013.jpg", "pages/p_014.jpg", "pages/p_015.jpg", "pages/p_016.jpg", "pages/p_017.jpg", "pages/p_018.jpg", "pages/p_019.jpg", "pages/p_020.jpg", "pages/p_021.jpg", "pages/p_022.jpg", "pages/p_023.jpg", "pages/p_024.jpg", "pages/p_025.jpg", "pages/p_026.jpg", "pages/p_027.jpg", "pages/p_028.jpg", "pages/p_029.jpg", "pages/p_030.jpg", "pages/p_031.jpg", "pages/p_032.jpg", "pages/p_033.jpg", "pages/p_034.jpg", "pages/p_035.jpg", "pages/p_036.jpg", "pages/p_037.jpg", "pages/p_038.jpg", "pages/p_039.jpg", "pages/p_040.jpg", "pages/p_041.jpg", "pages/p_042.jpg", "pages/p_043.jpg", "pages/p_044.jpg", "pages/p_045.jpg", "pages/p_046.jpg", "pages/p_047.jpg", "pages/p_048.jpg", "pages/p_049.jpg", "pages/p_050.jpg", "pages/p_051.jpg", "pages/p_052.jpg", "pages/p_053.jpg", "pages/p_054.jpg", "pages/p_055.jpg", "pages/p_056.jpg", "pages/p_057.jpg", "pages/p_058.jpg", "pages/p_059.jpg", "pages/p_060.jpg", "pages/p_061.jpg", "pages/p_062.jpg", "pages/p_063.jpg", "pages/p_064.jpg", "pages/p_065.jpg", "pages/p_066.jpg", "pages/p_067.jpg", "pages/p_068.jpg", "pages/p_069.jpg", "pages/p_070.jpg", "pages/p_071.jpg"], n=pages.length, HOLD=5.0*1000, PULL=380;
+  var cv=document.getElementById('screen'), ctx=cv.getContext('2d'), count=document.getElementById('count');
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var imgs={}, W=0,H=0, dpr=1;
+  function load(i){i=(i%n+n)%n; if(!imgs[i]){var im=new Image(); im.src=pages[i]; imgs[i]=im;} return imgs[i];}
+  function resize(){dpr=Math.min(window.devicePixelRatio||1,1.5); var r=cv.getBoundingClientRect(); W=Math.max(2,Math.round(r.width*dpr)); H=Math.max(2,Math.round(r.height*dpr)); cv.width=W; cv.height=H; buildOverlays();}
+  // ---- film grain tiles
+  var grain=[];
+  function buildOverlays(){
+    grain=[]; for(var k=0;k<6;k++){var c=document.createElement('canvas'); c.width=c.height=256; var g=c.getContext('2d'), d=g.createImageData(256,256);
+      for(var i=0;i<d.data.length;i+=4){var v=128+(Math.random()+Math.random()+Math.random()-1.5)*90; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255;}
+      g.putImageData(d,0,0); grain.push(c);}
+    vig=document.createElement('canvas'); vig.width=W; vig.height=H; var v=vig.getContext('2d');
+    var gr=v.createRadialGradient(W/2,H/2,Math.min(W,H)*0.28,W/2,H/2,Math.max(W,H)*0.78);
+    gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.78)'); v.fillStyle=gr; v.fillRect(0,0,W,H);
+    hot=document.createElement('canvas'); hot.width=W; hot.height=H; var h=hot.getContext('2d');
+    var g2=h.createRadialGradient(W/2,H*0.46,0,W/2,H*0.46,Math.max(W,H)*0.55);
+    g2.addColorStop(0,'rgba(255,255,255,.10)'); g2.addColorStop(1,'rgba(255,255,255,0)'); h.fillStyle=g2; h.fillRect(0,0,W,H);
+  }
+  var vig,hot;
+  // ---- state
+  var cur=0, nxt=null, pullT=-1, dir=1, holdUntil=0, paused=false;
+  var wx=0,wy=0,flick=1,flickTarget=1,frameNo=-1,lastTick=0, scratches=[], specks=[], hairs=[], dipUntil=0;
+  function setCount(){count.textContent=(cur+1)+' / '+n;}
+  function drawPage(im,ox,oy,alpha){
+    if(!im||!im.complete||!im.naturalWidth)return;
+    var s=Math.min(W/im.naturalWidth,H/im.naturalHeight)*0.985, w=im.naturalWidth*s, h=im.naturalHeight*s;
+    ctx.globalAlpha=alpha; ctx.drawImage(im,(W-w)/2+ox,(H-h)/2+oy,w,h); ctx.globalAlpha=1;
+  }
+  function step(now){
+    requestAnimationFrame(step);
+    // time steps at 24 fps for flicker / weave / dust
+    var fn=Math.floor(now/41.667), tick=fn!==frameNo; if(tick)frameNo=fn;
+    if(tick&&!reduce){
+      wx+= (Math.random()-0.5)*1.6*dpr; wy+=(Math.random()-0.5)*1.6*dpr; wx*=0.88; wy*=0.88;
+      flickTarget=0.90+Math.random()*0.10; if(Math.random()<0.035)dipUntil=now+60+Math.random()*90;
+      if(now<dipUntil)flickTarget=0.62+Math.random()*0.12;
+      flick+= (flickTarget-flick)*0.7;
+      if(Math.random()<0.5){var c=1+Math.floor(Math.random()*3); for(var i=0;i<c;i++)specks.push({x:Math.random()*W,y:Math.random()*H,r:(0.6+Math.random()*2.2)*dpr,l:1+Math.floor(Math.random()*2),w:Math.random()<0.7});}
+      if(Math.random()<0.035){var sy=Math.random()*H*0.5;scratches.push({x:Math.random()*W,l:1+Math.floor(Math.random()*3),a:0.05+Math.random()*0.12,w:Math.random()<0.8,y0:sy,y1:sy+H*(0.15+Math.random()*0.3)});}
+      if(Math.random()<0.015)hairs.push({x:Math.random()*W,y:Math.random()<0.5?0:H,dx:(Math.random()-0.5)*60*dpr,dy:(Math.random()<0.5?1:-1)*(40+Math.random()*70)*dpr,l:2+Math.floor(Math.random()*6)});
+    }
+    // scheduling
+    if(!paused&&pullT<0&&now>holdUntil&&holdUntil>0)advance(1,now);
+    // draw
+    ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+    var ox=reduce?0:wx, oy=reduce?0:wy;
+    if(pullT>=0){
+      var t=Math.min(1,(now-pullT)/PULL), e=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; var ov=t<0.82?e:1+Math.sin((t-0.82)/0.18*Math.PI)*0.012;
+      var off=H*ov*dir;
+      drawPage(load(cur),ox,oy-off,0.96); drawPage(load(nxt),ox,oy-off+H*dir,0.96);
+      // the ghost image during the pulldown
+      drawPage(load(cur),ox,oy-off*0.7,0.18*(1-t)); drawPage(load(nxt),ox,oy-off*0.7+H*dir,0.18*t);
+      if(t>=1){cur=nxt;nxt=null;pullT=-1;holdUntil=now+HOLD;setCount();}
+    } else { drawPage(load(cur),ox,oy,1); }
+    // lamp hotspot and flicker
+    ctx.globalCompositeOperation='screen'; ctx.drawImage(hot,0,0); ctx.globalCompositeOperation='source-over';
+    // grain
+    if(!reduce){
+      var gi=grain[(frameNo%6+6)%6]; var gx=Math.floor((frameNo*97)%256), gy=Math.floor((frameNo*57)%256);
+      ctx.globalAlpha=0.22; ctx.globalCompositeOperation='overlay';
+      for(var x=-gx;x<W;x+=256)for(var y=-gy;y<H;y+=256)ctx.drawImage(gi,x,y);
+      ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1;
+    }
+    // dust, scratches, hairs
+    ctx.fillStyle='#fff';
+    specks=specks.filter(function(s){if(tick)s.l--; return s.l>0;});
+    specks.forEach(function(s){ctx.fillStyle=s.w?'rgba(255,255,255,.75)':'rgba(0,0,0,.7)';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.3);ctx.fill();});
+    scratches=scratches.filter(function(s){if(tick)s.l--; return s.l>0;});
+    scratches.forEach(function(s){ctx.strokeStyle=s.w?'rgba(255,255,255,'+s.a+')':'rgba(0,0,0,'+s.a+')';ctx.lineWidth=Math.max(1,dpr);ctx.beginPath();ctx.moveTo(s.x,s.y0);ctx.lineTo(s.x+(Math.random()-0.5)*2,s.y1);ctx.stroke();});
+    hairs=hairs.filter(function(s){if(tick)s.l--; return s.l>0;});
+    hairs.forEach(function(s){ctx.strokeStyle='rgba(0,0,0,.8)';ctx.lineWidth=1.3*dpr;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.quadraticCurveTo(s.x+s.dx*0.2,s.y+s.dy*0.6,s.x+s.dx,s.y+s.dy);ctx.stroke();});
+    // vignette + shutter flicker (everything dims together)
+    ctx.drawImage(vig,0,0);
+    if(!reduce){ctx.fillStyle='rgba(0,0,0,'+(1-flick).toFixed(3)+')';ctx.fillRect(0,0,W,H);}
+  }
+  function advance(d,now){
+    if(pullT>=0)return; dir=d>=0?1:-1; nxt=((cur+dir)%n+n)%n; pullT=now||performance.now(); load(nxt);load(nxt+dir);
+    if(reduce){cur=nxt;nxt=null;pullT=-1;holdUntil=(now||performance.now())+HOLD;setCount();}
+  }
+  document.getElementById('next').onclick=function(){advance(1,performance.now());};
+  document.getElementById('prev').onclick=function(){advance(-1,performance.now());};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'){advance(1,performance.now());}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){advance(-1,performance.now());}
+    else if(e.key===' '){e.preventDefault();paused=!paused;holdUntil=performance.now()+HOLD;}
+  });
+  var x0=null; cv.addEventListener('pointerdown',function(e){x0=e.clientX;});
+  cv.addEventListener('pointerup',function(e){if(x0===null)return;var dx=e.clientX-x0;x0=null;
+    if(Math.abs(dx)>40)advance(dx<0?1:-1,performance.now()); else {paused=!paused;holdUntil=performance.now()+HOLD;}});
+  var h=parseInt((location.hash||'').replace('#',''),10); if(h>0&&h<=n)cur=h-1;
+  window.addEventListener('resize',resize); resize(); setCount(); load(cur);load(cur+1);load(cur+2);
+  holdUntil=performance.now()+HOLD; requestAnimationFrame(step);
+})();
+</script>
+</body></html>

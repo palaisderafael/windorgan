@@ -1,0 +1,50 @@
+{
+ "generated": "2026-11-24T13:53:00",
+ "days": [
+  {
+   "date": "2026-11-20",
+   "file": "audio/2026-11-20.mp3",
+   "from": "12:08 pm",
+   "minutes": 1.2,
+   "wind_seconds": 60,
+   "peak": 1.8,
+   "kb": 589
+  },
+  {
+   "date": "2026-11-19",
+   "file": "audio/2026-11-19.mp3",
+   "from": "1:51 pm",
+   "minutes": 1.2,
+   "wind_seconds": 60,
+   "peak": 3.0,
+   "kb": 582
+  },
+  {
+   "date": "2026-11-15",
+   "file": "audio/2026-11-15.mp3",
+   "from": "6:19 am",
+   "minutes": 1.2,
+   "wind_seconds": 54,
+   "peak": 2.8,
+   "kb": 571
+  },
+  {
+   "date": "2026-11-14",
+   "file": "audio/2026-11-14.mp3",
+   "from": "8:23 pm",
+   "minutes": 1.2,
+   "wind_seconds": 54,
+   "peak": 3.8,
+   "kb": 570
+  },
+  {
+   "date": "2026-11-10",
+   "file": "audio/2026-11-10.mp3",
+   "from": "6:16 pm",
+   "minutes": 1.2,
+   "wind_seconds": 60,
+   "peak": 2.6,
+   "kb": 592
+  }
+ ]
+}
